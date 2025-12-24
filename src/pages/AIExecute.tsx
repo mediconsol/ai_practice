@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -19,9 +20,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useExecuteAI } from "@/hooks/useExecuteAI";
+import { useSavePrompt } from "@/hooks/useSavePrompt";
+import { useSaveResult } from "@/hooks/useSaveResult";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { SavePromptDialog } from "@/components/prompts/SavePromptDialog";
+import { SaveResultDialog } from "@/components/results/SaveResultDialog";
 
 const quickPrompts = [
   {
@@ -71,14 +76,28 @@ const aiProviders = [
 ];
 
 export default function AIExecute() {
+  const location = useLocation();
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState("");
   const [selectedProvider, setSelectedProvider] = useState(aiProviders[0]);
   const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [tokenUsage, setTokenUsage] = useState<any>(null);
   const [isImproving, setIsImproving] = useState(false);
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [isSaveResultDialogOpen, setIsSaveResultDialogOpen] = useState(false);
 
   const executeAI = useExecuteAI();
+  const savePrompt = useSavePrompt();
+  const saveResult = useSaveResult();
+
+  // 프롬프트 자산에서 실행 버튼으로 넘어온 경우
+  useEffect(() => {
+    if (location.state?.prompt) {
+      setPrompt(location.state.prompt);
+      // state 초기화 (뒤로가기 시 중복 설정 방지)
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleExecute = async () => {
     if (!prompt.trim()) {
@@ -165,6 +184,30 @@ ${prompt}`,
     } finally {
       setIsImproving(false);
     }
+  };
+
+  const handleSavePrompt = async (data: {
+    title: string;
+    category: string;
+    content: string;
+    isFavorite: boolean;
+  }) => {
+    await savePrompt.mutateAsync(data);
+  };
+
+  const handleSaveResult = async (data: {
+    title: string;
+    category: string;
+    prompt: string;
+    result: string;
+    memo?: string;
+    isFavorite: boolean;
+    aiProvider?: string;
+    aiModel?: string;
+    executionTimeMs?: number;
+    tokenUsage?: any;
+  }) => {
+    await saveResult.mutateAsync(data);
   };
 
   return (
@@ -394,9 +437,22 @@ ${prompt}`,
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => setIsSaveDialogOpen(true)}
+                  >
                     <Save className="w-4 h-4" />
-                    프롬프트 자산으로 저장
+                    프롬프트 저장
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => setIsSaveResultDialogOpen(true)}
+                  >
+                    <Save className="w-4 h-4" />
+                    실행 결과 저장
                   </Button>
                 </div>
               </div>
@@ -404,6 +460,27 @@ ${prompt}`,
           </div>
         </div>
       </div>
+
+      {/* Save Prompt Dialog */}
+      <SavePromptDialog
+        open={isSaveDialogOpen}
+        onOpenChange={setIsSaveDialogOpen}
+        prompt={prompt}
+        onSave={handleSavePrompt}
+      />
+
+      {/* Save Result Dialog */}
+      <SaveResultDialog
+        open={isSaveResultDialogOpen}
+        onOpenChange={setIsSaveResultDialogOpen}
+        prompt={prompt}
+        result={result}
+        aiProvider={selectedProvider.provider}
+        aiModel={selectedProvider.model}
+        executionTimeMs={executionTime || undefined}
+        tokenUsage={tokenUsage}
+        onSave={handleSaveResult}
+      />
     </div>
   );
 }

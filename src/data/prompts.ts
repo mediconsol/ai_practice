@@ -1,6 +1,8 @@
+import { PROMPT_CATEGORIES_WITH_ALL, type PromptCategory } from "@/constants/categories";
+
 export interface Prompt {
   title: string;
-  category: string;
+  category: PromptCategory | string;
   content: string;
   isFavorite: boolean;
   usageCount: number;
@@ -16,14 +18,14 @@ export const prompts: Prompt[] = [
   },
   {
     title: "진료 기록 SOAP 정리",
-    category: "진료 기록",
+    category: "SOAP 정리",
     content: "다음 진료 내용을 SOAP 형식으로 정리해주세요. Subjective: {subjective}, Objective: {objective}, Assessment: {assessment}, Plan: {plan}...",
     isFavorite: true,
     usageCount: 42,
   },
   {
-    title: "논문 초록 요약",
-    category: "문서 요약",
+    title: "최신 논문 요약",
+    category: "의학 문헌",
     content: "다음 논문 초록의 핵심 내용을 3줄로 요약해주세요. 연구 목적, 방법, 결론을 포함해주세요. 논문: {abstract}...",
     isFavorite: false,
     usageCount: 31,
@@ -37,15 +39,15 @@ export const prompts: Prompt[] = [
   },
   {
     title: "고혈압 복약 안내문",
-    category: "환자 안내문",
+    category: "처방 안내",
     content: "고혈압 약물 {medication} 복용에 대한 환자 안내문을 작성해주세요. 복용 방법, 주의사항, 부작용 설명을 포함해주세요...",
     isFavorite: false,
     usageCount: 27,
   },
   {
-    title: "가이드라인 핵심 정리",
-    category: "문서 요약",
-    content: "다음 의료 가이드라인의 핵심 권고사항을 표 형식으로 정리해주세요. 권고 등급과 근거 수준을 포함해주세요. 가이드라인: {guideline}...",
+    title: "입원 환자 간호 기록",
+    category: "간호 기록",
+    content: "입원 환자의 간호 기록을 작성해주세요. 날짜/시간, 활력징후, 수행한 간호 활동, 환자 반응을 포함해주세요...",
     isFavorite: true,
     usageCount: 15,
   },
@@ -57,12 +59,13 @@ export const prompts: Prompt[] = [
     usageCount: 12,
   },
   {
-    title: "수술 동의서 설명문",
-    category: "환자 안내문",
-    content: "{surgery} 수술에 대한 환자 설명문을 작성해주세요. 수술 방법, 예상 결과, 합병증, 대안 치료를 쉬운 말로 설명해주세요...",
+    title: "MRI 검사 설명문",
+    category: "검사 설명",
+    content: "{exam} 검사에 대한 환자 설명문을 작성해주세요. 검사 목적, 방법, 소요 시간, 주의사항을 쉬운 말로 설명해주세요...",
     isFavorite: false,
     usageCount: 9,
   },
 ];
 
-export const promptCategories = ["전체", "환자 안내문", "진료 기록", "문서 요약", "의뢰서", "교육자료", "일반"];
+// 공통 카테고리 상수 사용
+export const promptCategories = PROMPT_CATEGORIES_WITH_ALL;

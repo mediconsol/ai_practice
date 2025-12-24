@@ -11,6 +11,7 @@ import Prompts from "./pages/Prompts";
 import AIExecute from "./pages/AIExecute";
 import Projects from "./pages/Projects";
 import History from "./pages/History";
+import MyPage from "./pages/MyPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -85,6 +86,16 @@ const App = () => (
               <ProtectedRoute>
                 <DashboardLayout>
                   <History />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-page"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <MyPage />
                 </DashboardLayout>
               </ProtectedRoute>
             }

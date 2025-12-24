@@ -6,7 +6,8 @@ import {
   Settings,
   FolderOpen,
   History,
-  Zap
+  Zap,
+  User
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -33,6 +34,7 @@ const mainMenuItems = [
 ];
 
 const workMenuItems = [
+  { title: "마이페이지", url: "/my-page", icon: User },
   { title: "내 프로젝트", url: "/projects", icon: FolderOpen },
   { title: "실행 히스토리", url: "/history", icon: History },
 ];
