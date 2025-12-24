@@ -36,6 +36,7 @@ interface ResultCardProps {
   createdAt: string;
   onToggleFavorite?: (id: string, currentFavorite: boolean) => void;
   onToggleShare?: (id: string, currentShared: boolean) => void;
+  onEdit?: (id: string) => void;
   onDelete?: (id: string, title: string) => void;
 }
 
@@ -54,6 +55,7 @@ export function ResultCard({
   createdAt,
   onToggleFavorite,
   onToggleShare,
+  onEdit,
   onDelete,
 }: ResultCardProps) {
   const navigate = useNavigate();
@@ -83,6 +85,13 @@ export function ResultCard({
     e.stopPropagation();
     if (onToggleShare) {
       onToggleShare(id, isShared);
+    }
+  };
+
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit) {
+      onEdit(id);
     }
   };
 
@@ -154,6 +163,10 @@ export function ResultCard({
                 결과물 복사
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleEdit}>
+                <Pencil className="w-4 h-4 mr-2" />
+                수정
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleToggleFavorite}>
                 <Star className="w-4 h-4 mr-2" />
                 {isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}

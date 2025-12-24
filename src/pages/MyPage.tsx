@@ -8,6 +8,7 @@ import { usePrompts, useToggleFavorite, useDeletePrompt } from "@/hooks/usePromp
 import { ResultCard } from "@/components/results/ResultCard";
 import { PromptCard } from "@/components/dashboard/PromptCard";
 import { ShareConfirmDialog } from "@/components/results/ShareConfirmDialog";
+import { EditResultDialog } from "@/components/results/EditResultDialog";
 import { PROMPT_CATEGORIES_WITH_ALL } from "@/constants/categories";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +22,13 @@ export default function MyPage() {
     id: string;
     title: string;
     isShared: boolean;
+  } | null>(null);
+  const [editResultDialogOpen, setEditResultDialogOpen] = useState(false);
+  const [selectedResultForEdit, setSelectedResultForEdit] = useState<{
+    id: string;
+    title: string;
+    category: string;
+    memo?: string | null;
   } | null>(null);
 
   // 데이터 조회
@@ -68,6 +76,19 @@ export default function MyPage() {
   // 핸들러
   const handleToggleResultFavorite = (id: string, currentFavorite: boolean) => {
     toggleResultFavorite.mutate({ id, isFavorite: currentFavorite });
+  };
+
+  const handleEditResult = (id: string) => {
+    const result = results.find((r) => r.id === id);
+    if (result) {
+      setSelectedResultForEdit({
+        id: result.id,
+        title: result.title,
+        category: result.category,
+        memo: result.memo,
+      });
+      setEditResultDialogOpen(true);
+    }
   };
 
   const handleDeleteResult = (id: string, title: string) => {
@@ -282,6 +303,7 @@ export default function MyPage() {
                     createdAt={result.created_at}
                     onToggleFavorite={handleToggleResultFavorite}
                     onToggleShare={handleToggleShare}
+                    onEdit={handleEditResult}
                     onDelete={handleDeleteResult}
                   />
                 </div>
@@ -394,6 +416,15 @@ export default function MyPage() {
         title={selectedResultForShare?.title || ""}
         onConfirm={handleShareConfirm}
       />
+
+      {/* Edit Result Dialog */}
+      {selectedResultForEdit && (
+        <EditResultDialog
+          open={editResultDialogOpen}
+          onOpenChange={setEditResultDialogOpen}
+          result={selectedResultForEdit}
+        />
+      )}
     </div>
   );
 }

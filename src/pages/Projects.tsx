@@ -25,6 +25,7 @@ import { useProjects, useDeleteProject } from "@/hooks/useProjects";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Database } from "@/lib/supabase";
+import { EditProjectDialog } from "@/components/projects/EditProjectDialog";
 
 type ProjectStatus = Database['public']['Tables']['projects']['Row']['status'];
 
@@ -35,10 +36,11 @@ interface ProjectCardProps {
   prompt_count: number;
   updated_at: string;
   status: ProjectStatus;
+  onEdit: (id: string) => void;
   onDelete: (id: string, title: string) => void;
 }
 
-function ProjectCard({ id, title, description, prompt_count, updated_at, status, onDelete }: ProjectCardProps) {
+function ProjectCard({ id, title, description, prompt_count, updated_at, status, onEdit, onDelete }: ProjectCardProps) {
   return (
     <div className="group bg-card rounded-xl border border-border p-5 transition-all duration-300 hover:shadow-lg hover:border-primary/30 animate-fade-in">
       <div className="flex items-start justify-between mb-3">
@@ -63,7 +65,12 @@ function ProjectCard({ id, title, description, prompt_count, updated_at, status,
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(id);
+                }}
+              >
                 <Edit className="w-4 h-4 mr-2" />
                 편집
               </DropdownMenuItem>
@@ -113,6 +120,13 @@ function ProjectCard({ id, title, description, prompt_count, updated_at, status,
 export default function Projects() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | ProjectStatus | null>("all");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<{
+    id: string;
+    title: string;
+    description: string | null;
+    status: ProjectStatus;
+  } | null>(null);
   const { data: projects = [], isLoading } = useProjects();
   const deleteProjectMutation = useDeleteProject();
 
@@ -124,6 +138,19 @@ export default function Projects() {
       return matchesSearch && matchesFilter;
     });
   }, [projects, searchQuery, filter]);
+
+  const handleEdit = (id: string) => {
+    const project = projects.find(p => p.id === id);
+    if (project) {
+      setSelectedProject({
+        id: project.id,
+        title: project.title,
+        description: project.description,
+        status: project.status,
+      });
+      setEditDialogOpen(true);
+    }
+  };
 
   const handleDelete = (id: string, title: string) => {
     if (confirm(`"${title}" 프로젝트를 삭제하시겠습니까?`)) {
@@ -231,6 +258,7 @@ export default function Projects() {
               prompt_count={project.prompt_count}
               updated_at={project.updated_at}
               status={project.status}
+              onEdit={handleEdit}
               onDelete={handleDelete}
             />
           </div>
@@ -246,6 +274,15 @@ export default function Projects() {
             첫 프로젝트 만들기
           </Button>
         </div>
+      )}
+
+      {/* Edit Project Dialog */}
+      {selectedProject && (
+        <EditProjectDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          project={selectedProject}
+        />
       )}
     </div>
   );

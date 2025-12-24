@@ -268,9 +268,9 @@ src/
 - [x] 1.2 Prompts 수정 ✅
 - [x] 1.3 History 삭제 UI ✅
 
-### Phase 2 진행 상황
-- [ ] 2.1 MyPage 실행 결과 수정
-- [ ] 2.2 Projects 수정 완성
+### Phase 2 진행 상황 ✅ 완료
+- [x] 2.1 MyPage 실행 결과 수정 ✅
+- [x] 2.2 Projects 수정 완성 ✅
 
 ### Phase 3 진행 상황
 - [ ] 3.1 일괄 작업
@@ -305,3 +305,6 @@ src/
   - Programs 페이지: 수정/삭제 기능 구현 (EditProgramDialog, ProgramCard 드롭다운 메뉴)
   - Prompts 페이지: 수정 기능 구현 (EditPromptDialog, PromptCard 수정 메뉴)
   - History 페이지: 삭제 UI 추가 (HistoryItem 드롭다운 메뉴)
+- **2025-12-25**: Phase 2 완료 ✅
+  - MyPage: 실행 결과 수정 기능 구현 (EditResultDialog, ResultCard 수정 메뉴)
+  - Projects: 수정 기능 완성 (EditProjectDialog, ProjectCard 편집 메뉴 연결)
