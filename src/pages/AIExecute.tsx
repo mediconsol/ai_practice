@@ -59,6 +59,7 @@ export default function AIExecute() {
   const [selectedProvider, setSelectedProvider] = useState(aiProviders[0]);
   const [executionTime, setExecutionTime] = useState<number | null>(null);
   const [tokenUsage, setTokenUsage] = useState<any>(null);
+  const [isImproving, setIsImproving] = useState(false);
 
   const executeAI = useExecuteAI();
 
@@ -117,6 +118,38 @@ export default function AIExecute() {
     handleExecute();
   };
 
+  const handleImprovePrompt = async () => {
+    if (!prompt.trim()) {
+      toast.error('개선할 프롬프트를 입력해주세요');
+      return;
+    }
+
+    setIsImproving(true);
+    try {
+      const response = await executeAI.mutateAsync({
+        prompt: `다음 프롬프트를 더 명확하고 구체적이며 효과적으로 개선해주세요. 개선된 프롬프트만 출력하고, 설명이나 부가 설명은 생략하세요:
+
+${prompt}`,
+        provider: selectedProvider.provider,
+        model: selectedProvider.model,
+      });
+
+      if (response.success && response.result) {
+        setPrompt(response.result.trim());
+        toast.success('프롬프트가 개선되었습니다');
+      } else {
+        throw new Error(response.error || '프롬프트 개선에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('Prompt improvement error:', error);
+      toast.error('프롬프트 개선 실패', {
+        description: error.message || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
+      });
+    } finally {
+      setIsImproving(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -172,9 +205,15 @@ export default function AIExecute() {
 
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" className="gap-1.5">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={handleImprovePrompt}
+                  disabled={!prompt.trim() || isImproving || executeAI.isPending}
+                >
                   <Wand2 className="w-4 h-4" />
-                  프롬프트 개선
+                  {isImproving ? "개선 중..." : "프롬프트 개선"}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -273,8 +312,41 @@ export default function AIExecute() {
                   </p>
                 </div>
               ) : result ? (
-                <div className="prose prose-sm max-w-none dark:prose-invert text-card-foreground">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <div className="prose prose-base max-w-none dark:prose-invert prose-slate prose-headings:font-bold prose-headings:text-foreground prose-p:text-card-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:not-italic prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-table:border-collapse prose-th:border prose-th:border-border prose-th:bg-muted prose-th:px-4 prose-th:py-2 prose-td:border prose-td:border-border prose-td:px-4 prose-td:py-2 prose-ul:list-disc prose-ol:list-decimal prose-li:text-card-foreground">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      // 코드 블록 커스터마이징
+                      code({className, children, ...props}: any) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return match ? (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      },
+                      // 표 커스터마이징
+                      table({children}: any) {
+                        return (
+                          <div className="overflow-x-auto my-4">
+                            <table className="min-w-full">{children}</table>
+                          </div>
+                        );
+                      },
+                      // 인용구 커스터마이징
+                      blockquote({children}: any) {
+                        return (
+                          <blockquote className="border-l-4 pl-4 py-2 my-4">
+                            {children}
+                          </blockquote>
+                        );
+                      },
+                    }}
+                  >
                     {result}
                   </ReactMarkdown>
                 </div>
