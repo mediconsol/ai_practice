@@ -250,7 +250,7 @@ serve(async (req) => {
           throw new Error('Claude API key not configured');
         }
 
-        aiModel = model || 'claude-3-5-sonnet-20241022';
+        aiModel = model || 'claude-3-5-haiku-20241022';
 
         const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',

@@ -63,10 +63,10 @@ const aiProviders = [
   },
   {
     name: "Claude",
-    description: "Anthropic Claude 3.5",
+    description: "Anthropic Claude 3.5 Haiku",
     available: true,
     provider: "claude" as const,
-    model: "claude-3-5-sonnet-20241022"
+    model: "claude-3-5-haiku-20241022"
   },
 ];
 
