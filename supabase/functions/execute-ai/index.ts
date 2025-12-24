@@ -118,10 +118,12 @@ serve(async (req) => {
           throw new Error('Gemini API key not configured');
         }
 
-        aiModel = model || 'gemini-pro';
+        aiModel = model || 'gemini-1.5-flash';
+
+        console.log(`Calling Gemini API with model: ${aiModel}`);
 
         const geminiResponse = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${aiModel}:generateContent?key=${GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1/models/${aiModel}:generateContent?key=${GEMINI_API_KEY}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -133,31 +135,63 @@ serve(async (req) => {
               }],
               generationConfig: {
                 temperature: 0.7,
-                maxOutputTokens: 2000,
+                maxOutputTokens: 2048,
               }
             }),
           }
         );
 
+        console.log(`Gemini response status: ${geminiResponse.status}`);
+
         if (!geminiResponse.ok) {
-          const error = await geminiResponse.json();
-          throw new Error(`Gemini API error: ${error.error?.message || 'Unknown error'}`);
+          const errorText = await geminiResponse.text();
+          console.error('Gemini API error response:', errorText);
+
+          let errorMessage = 'Unknown error';
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.error?.message || errorText;
+          } catch {
+            errorMessage = errorText;
+          }
+
+          throw new Error(`Gemini API error (${geminiResponse.status}): ${errorMessage}`);
         }
 
         const geminiData = await geminiResponse.json();
+        console.log('Gemini response data:', JSON.stringify(geminiData).substring(0, 200));
 
         if (!geminiData.candidates || geminiData.candidates.length === 0) {
+          // 안전 필터링으로 차단된 경우
+          if (geminiData.promptFeedback?.blockReason) {
+            throw new Error(`Gemini blocked request: ${geminiData.promptFeedback.blockReason}`);
+          }
           throw new Error('Gemini returned no candidates');
         }
 
-        result = geminiData.candidates[0].content.parts[0].text;
+        // 첫 번째 후보가 있는지 확인
+        const candidate = geminiData.candidates[0];
+        if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+          throw new Error('Gemini response has no content');
+        }
 
-        // Gemini는 토큰 사용량을 직접 제공하지 않으므로 대략적으로 계산
-        tokenUsage = {
-          prompt_tokens: Math.ceil(processedPrompt.length / 4),
-          completion_tokens: Math.ceil(result.length / 4),
-          total_tokens: Math.ceil((processedPrompt.length + result.length) / 4),
-        };
+        result = candidate.content.parts[0].text;
+
+        // Gemini 1.5는 토큰 사용량을 제공
+        if (geminiData.usageMetadata) {
+          tokenUsage = {
+            prompt_tokens: geminiData.usageMetadata.promptTokenCount || 0,
+            completion_tokens: geminiData.usageMetadata.candidatesTokenCount || 0,
+            total_tokens: geminiData.usageMetadata.totalTokenCount || 0,
+          };
+        } else {
+          // 토큰 사용량이 없으면 대략적으로 계산
+          tokenUsage = {
+            prompt_tokens: Math.ceil(processedPrompt.length / 4),
+            completion_tokens: Math.ceil(result.length / 4),
+            total_tokens: Math.ceil((processedPrompt.length + result.length) / 4),
+          };
+        }
         break;
       }
 
