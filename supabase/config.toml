@@ -1,0 +1,50 @@
+# Supabase CLI 설정 파일
+
+[api]
+# API 포트 (로컬 개발용)
+port = 54321
+# 스키마
+schemas = ["public", "storage", "graphql_public"]
+# Extra schemas to add to the search_path
+extra_search_path = ["public", "extensions"]
+
+[db]
+# 데이터베이스 포트 (로컬 개발용)
+port = 54322
+# Postgres 버전
+major_version = 15
+
+[studio]
+# Supabase Studio 포트 (로컬 개발용)
+port = 54323
+
+[inbucket]
+# InBucket 이메일 테스트 서버 포트
+port = 54324
+
+[storage]
+# Storage 설정
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+# 인증 설정
+site_url = "http://localhost:8080"
+additional_redirect_urls = ["http://localhost:8080"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+# Edge Functions 설정
+[functions.execute-ai]
+verify_jwt = true
+
+[functions.export-prompts]
+verify_jwt = true
+
+[functions.import-prompts]
+verify_jwt = true

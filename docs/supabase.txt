@@ -1,0 +1,26 @@
+# supabase 
+project name = ai_practice
+Project ID = jkhpwsbogsgkqrspublx
+
+Project URL = https://jkhpwsbogsgkqrspublx.supabase.co
+Publishable API Key = sb_publishable_65pl6qd-1To0jmB_fg6b-w_m_Z70pbt
+
+Secret keys = sb_secret_7ujJLFK7w9oJxXsSBrXDrA_H8qoCC8c
+
+JWT Keys
+Key ID = 1c6e6b61-d1f2-4520-a673-301378e93515
+Discovery URL = https://jkhpwsbogsgkqrspublx.supabase.co/auth/v1/.well-known/jwks.json
+Public Key (JSON Web Key format)
+{
+  "x": "cjD5I2bHn9OecnIpvnfBON00LwKYUQdEdH4vYBGDUZA",
+  "y": "sdN8jT_tVt7tA463pUV_-nC9NC7wOa8QQvSct7Nd6HI",
+  "alg": "ES256",
+  "crv": "P-256",
+  "ext": true,
+  "kid": "1c6e6b61-d1f2-4520-a673-301378e93515",
+  "kty": "EC",
+  "key_ops": [
+    "verify"
+  ]
+}
+
