@@ -39,10 +39,10 @@ const aiProviders = [
   },
   {
     name: "Gemini",
-    description: "Google Gemini 1.5 Flash",
+    description: "Google Gemini 2.5 Flash",
     available: true,
     provider: "gemini" as const,
-    model: "gemini-1.5-flash"
+    model: "gemini-2.5-flash"
   },
   {
     name: "Claude",
