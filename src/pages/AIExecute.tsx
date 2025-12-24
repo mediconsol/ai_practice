@@ -24,9 +24,22 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 const quickPrompts = [
-  { title: "문서 요약", description: "긴 문서를 핵심만 요약" },
-  { title: "환자 안내문", description: "쉬운 말로 안내문 작성" },
-  { title: "SOAP 정리", description: "진료 기록 표준화" },
+  {
+    title: "환자 안내문",
+    prompt: "당뇨병 환자를 위한 식이요법 안내문을 작성해주세요. 환자가 이해하기 쉽게 작성하고, 권장 식단과 피해야 할 음식을 표로 정리해주세요."
+  },
+  {
+    title: "SOAP 정리",
+    prompt: "다음 진료 내용을 SOAP 형식으로 정리해주세요:\n\n67세 남자, 가슴 통증 호소. 3일 전부터 시작, 활동 시 악화. 과거력: 고혈압 10년. 혈압 160/95, 심박수 88. 심전도 검사 결과 정상. 협심증 의심. 니트로글리세린 처방, 심장내과 의뢰."
+  },
+  {
+    title: "처방 안내",
+    prompt: "아스피린 100mg (혈전 예방용) 처방에 대한 환자 안내문을 작성해주세요. 복용 방법, 주의사항, 부작용을 포함해주세요."
+  },
+  {
+    title: "간호 기록",
+    prompt: "입원 환자(72세 여성, 폐렴)의 간호 기록을 작성해주세요. 2024-01-15 14:00 활력징후 측정, 발열 38.5도, 해열제 투여, 30분 후 37.2도로 하강."
+  },
 ];
 
 const aiProviders = [
@@ -164,12 +177,12 @@ ${prompt}`,
       <div className="flex items-center gap-3 overflow-x-auto pb-2 animate-fade-in">
         <span className="text-sm text-muted-foreground shrink-0">빠른 시작:</span>
         {quickPrompts.map((item) => (
-          <Button 
-            key={item.title} 
-            variant="outline" 
+          <Button
+            key={item.title}
+            variant="outline"
             size="sm"
             className="shrink-0"
-            onClick={() => setPrompt(`${item.title}: ${item.description}\n\n[여기에 내용을 입력하세요]`)}
+            onClick={() => setPrompt(item.prompt)}
           >
             {item.title}
           </Button>
