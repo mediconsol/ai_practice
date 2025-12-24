@@ -1,8 +1,8 @@
-import { 
-  LayoutDashboard, 
-  Boxes, 
-  MessageSquareText, 
-  Sparkles, 
+import {
+  LayoutDashboard,
+  Boxes,
+  MessageSquareText,
+  Sparkles,
   Settings,
   FolderOpen,
   History,
@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { UserProfile } from "@/components/layout/UserProfile";
 import {
   Sidebar,
   SidebarContent,
@@ -115,18 +116,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-4 border-t border-sidebar-border">
-        {!collapsed && (
-          <div className="flex items-center gap-3 animate-fade-in">
-            <div className="w-8 h-8 rounded-full bg-sidebar-accent flex items-center justify-center">
-              <span className="text-sm font-medium text-sidebar-foreground">김</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">김의사</p>
-              <p className="text-xs text-sidebar-foreground/60 truncate">유료회원</p>
-            </div>
-          </div>
-        )}
+      <SidebarFooter className="p-2 border-t border-sidebar-border">
+        <UserProfile />
       </SidebarFooter>
     </Sidebar>
   );
