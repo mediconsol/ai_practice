@@ -14,6 +14,7 @@ import {
   Copy
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,11 +40,15 @@ interface ProjectCardProps {
   status: ProjectStatus;
   onEdit: (id: string) => void;
   onDelete: (id: string, title: string) => void;
+  onClick: (id: string) => void;
 }
 
-function ProjectCard({ id, title, description, prompt_count, updated_at, status, onEdit, onDelete }: ProjectCardProps) {
+function ProjectCard({ id, title, description, prompt_count, updated_at, status, onEdit, onDelete, onClick }: ProjectCardProps) {
   return (
-    <div className="group bg-card rounded-xl border border-border p-5 transition-all duration-300 hover:shadow-lg hover:border-primary/30 animate-fade-in">
+    <div
+      className="group bg-card rounded-xl border border-border p-5 transition-all duration-300 hover:shadow-lg hover:border-primary/30 animate-fade-in cursor-pointer"
+      onClick={() => onClick(id)}
+    >
       <div className="flex items-start justify-between mb-3">
         <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
           <FolderOpen className="w-5 h-5 text-primary" />
@@ -119,6 +124,7 @@ function ProjectCard({ id, title, description, prompt_count, updated_at, status,
 }
 
 export default function Projects() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | ProjectStatus | null>("all");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -140,6 +146,10 @@ export default function Projects() {
       return matchesSearch && matchesFilter;
     });
   }, [projects, searchQuery, filter]);
+
+  const handleProjectClick = (id: string) => {
+    navigate(`/projects/${id}`);
+  };
 
   const handleEdit = (id: string) => {
     const project = projects.find(p => p.id === id);
@@ -260,6 +270,7 @@ export default function Projects() {
               prompt_count={project.prompt_count}
               updated_at={project.updated_at}
               status={project.status}
+              onClick={handleProjectClick}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />

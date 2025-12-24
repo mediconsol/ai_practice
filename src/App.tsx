@@ -13,6 +13,7 @@ import ProgramRunner from "./pages/ProgramRunner";
 import Prompts from "./pages/Prompts";
 import AIExecute from "./pages/AIExecute";
 import Projects from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
 import History from "./pages/History";
 import MyPage from "./pages/MyPage";
 import UserGuide from "./pages/UserGuide";
@@ -91,6 +92,16 @@ const App = () => (
               <ProtectedRoute>
                 <DashboardLayout>
                   <Projects />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <ProjectDetail />
                 </DashboardLayout>
               </ProtectedRoute>
             }
