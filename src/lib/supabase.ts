@@ -157,6 +157,23 @@ export interface Database {
         Insert: Omit<Tables<'execution_history'>, 'id' | 'created_at'>;
         Update: Partial<Tables<'execution_history'>>;
       };
+      collections: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          category: string;
+          preview_mode: 'html' | 'artifact';
+          artifact_url: string | null;
+          storage_path: string | null;
+          memo: string | null;
+          is_favorite: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<Tables<'collections'>, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Tables<'collections'>>;
+      };
     };
     Enums: {
       subscription_tier: 'free' | 'pro' | 'enterprise';
@@ -166,4 +183,93 @@ export interface Database {
       program_type: 'chat' | 'form' | 'template';
     };
   };
+}
+
+// ============================================
+// Storage 헬퍼 함수
+// ============================================
+
+/**
+ * 컬렉션 파일을 Supabase Storage에 업로드
+ * @param userId 사용자 ID
+ * @param collectionId 컬렉션 ID
+ * @param content 파일 내용 (HTML, Python 또는 React/JSX 코드)
+ * @param extension 파일 확장자 ('html', 'py', 'jsx')
+ * @returns 업로드된 파일 경로와 에러 정보
+ */
+export async function uploadCollectionFile(
+  userId: string,
+  collectionId: string,
+  content: string,
+  extension: 'html' | 'py' | 'jsx' = 'html'
+): Promise<{ path: string | null; error: Error | null }> {
+  const filePath = `${userId}/${collectionId}.${extension}`;
+  const mimeType = extension === 'py' ? 'text/x-python' : extension === 'jsx' ? 'text/jsx' : 'text/html';
+
+  const { error } = await supabase.storage
+    .from('collections')
+    .upload(filePath, new Blob([content], { type: mimeType }), {
+      cacheControl: '3600',
+      upsert: true,
+    });
+
+  if (error) {
+    console.error('Storage upload error:', error);
+    return { path: null, error };
+  }
+
+  return { path: filePath, error: null };
+}
+
+/**
+ * HTML 컬렉션 파일을 Supabase Storage에서 다운로드
+ * @param storagePath Storage 파일 경로
+ * @returns HTML 소스 코드와 에러 정보
+ */
+export async function downloadCollectionFile(
+  storagePath: string
+): Promise<{ content: string | null; error: Error | null }> {
+  const { data, error } = await supabase.storage
+    .from('collections')
+    .download(storagePath);
+
+  if (error || !data) {
+    console.error('Storage download error:', error);
+    return { content: null, error };
+  }
+
+  const content = await data.text();
+  return { content, error: null };
+}
+
+/**
+ * HTML 컬렉션 파일을 Supabase Storage에서 삭제
+ * @param storagePath Storage 파일 경로
+ * @returns 에러 정보
+ */
+export async function deleteCollectionFile(
+  storagePath: string
+): Promise<{ error: Error | null }> {
+  const { error } = await supabase.storage
+    .from('collections')
+    .remove([storagePath]);
+
+  if (error) {
+    console.error('Storage delete error:', error);
+  }
+
+  return { error };
+}
+
+/**
+ * Storage 파일의 공개 URL 생성
+ * @param storagePath Storage 파일 경로
+ * @returns 공개 URL
+ */
+export function getCollectionPublicUrl(storagePath: string): string {
+  const { data } = supabase.storage
+    .from('collections')
+    .getPublicUrl(storagePath);
+
+  return data.publicUrl;
 }

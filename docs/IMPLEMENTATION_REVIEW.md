@@ -331,6 +331,155 @@ UI 업데이트 (결과, 시간, 토큰)
 
 ---
 
+## ✅ 완료된 작업 (Phase 2.5)
+
+### 7. 프로그램 수집함 (Program Collections) (100%)
+
+#### 🎯 기능 개요
+**목적**: AI 도구(ChatGPT, Claude, Gemini 등)에서 생성한 HTML/React/Python 프로그램과 Claude Artifact를 실행하고 보관하는 통합 저장소
+
+**배경**:
+- AI 도구가 HTML 기반 인터랙티브 프로그램을 생성하지만 실행/보관할 환경이 없음
+- Claude Artifacts는 Claude 플랫폼에서만 확인 가능
+- VSCode 붙여넣기나 파일 저장 없이 즉시 실행하고 싶은 니즈
+
+**완료일**: 2024-12-25
+
+#### ✅ 구현 완료 내역
+
+**Phase 1: 기본 인프라**
+- ✅ Supabase 마이그레이션 3개
+  - `20251225000001_add_collections_and_storage.sql` - 기본 테이블 및 Storage 버킷
+  - `20251225000002_add_python_support.sql` - Python 지원 추가
+  - `20251225000003_add_react_support.sql` - React 지원 추가
+- ✅ `collections` 테이블 (메타데이터: 제목, 카테고리, 메모, 즐겨찾기 등)
+- ✅ Supabase Storage 버킷 `collections` + RLS 정책
+- ✅ TypeScript 타입 정의 (`src/types/collection.ts`)
+- ✅ URL 감지 유틸리티 (`src/lib/urlDetector.ts`)
+  - `isClaudeArtifactUrl`, `extractArtifactUrl`
+  - `isHtmlCode`, `isPythonCode`, `isReactCode`
+- ✅ Supabase Storage 헬퍼 함수 (`src/lib/supabase.ts`)
+  - `uploadCollectionFile` (HTML/Python/React 파일 업로드)
+  - `downloadCollectionFile`, `deleteCollectionFile`
+- ✅ `useCollections` Hook (`src/hooks/useCollections.ts`)
+  - Supabase 기반 CRUD 작업
+  - Storage 자동 연동
+
+**Phase 2: 핵심 컴포넌트**
+- ✅ `CodeEditor` - 코드 입력 영역, 저장 버튼
+- ✅ `PreviewPane` - 통합 미리보기 컴포넌트
+  - HTML iframe 샌드박스
+  - Claude Artifact iframe 임베딩
+  - Python 실행 (Pyodide v0.29.0)
+  - React 렌더링 (Babel Standalone)
+  - 각 모드별 제한사항 안내
+- ✅ `SaveCollectionDialog` - 제목, 카테고리, 메모, 즐겨찾기 입력
+- ✅ `CollectionList` & `CollectionCard` - 검색/필터, 최신순 정렬
+- ✅ `ProgramCollections.tsx` - 2분할 에디터 페이지
+
+**Phase 3: 고급 기능**
+- ✅ **Python 지원 (Pyodide v0.29.0)**
+  - 브라우저 기반 Python 실행
+  - stdout/stderr 캡처 및 터미널 UI
+  - NumPy, Pandas 등 기본 라이브러리 지원
+  - 제한사항: pip install 불가
+- ✅ **React 지원 (Babel Standalone)**
+  - 브라우저 기반 JSX 변환
+  - 자동 import/export 제거
+  - 자동 컴포넌트 감지 및 App 래퍼 생성
+  - React Hooks 전역 제공 (useState, useEffect 등)
+  - 제한사항: npm 라이브러리 불가, CSS 격리 제한적
+- ✅ **자동 코드 타입 감지**
+  - 붙여넣은 코드 자동 분석
+  - Claude Artifact URL → React → HTML → Python 순서로 감지
+
+**Phase 4: UX 개선**
+- ✅ **CollectionViewDialog** - 전체화면 모달로 프로그램 실행
+  - "프로그램 열기" 버튼으로 UX 개선
+  - 에디터 로딩 대신 모달 뷰어 사용
+- ✅ **Collapsible Info Card**
+  - 사용 방법 상세 안내
+  - 각 코드 타입별 권장사항
+  - HTML 우선 권장, React/Python 제한사항 명시
+  - Claude Artifact 도메인 허용 안내 (*.mediconsol.com)
+- ✅ **메뉴 명칭 개선**
+  - "AI 프로그램" → "AI 도구 모음"
+  - "AI 실행" → "프롬프트 작업실"
+
+#### 📁 생성된 파일 (12개)
+```
+src/
+├── types/
+│   └── collection.ts                              ✅ 타입 정의
+├── lib/
+│   └── urlDetector.ts                             ✅ URL 감지 유틸
+├── hooks/
+│   └── useCollections.ts                          ✅ Supabase 연동 Hook
+├── pages/
+│   └── ProgramCollections.tsx                     ✅ 메인 페이지
+└── components/collections/
+    ├── CodeEditor.tsx                             ✅ 코드 입력 영역
+    ├── PreviewPane.tsx                            ✅ 통합 미리보기
+    ├── PyodideRunner.tsx                          ✅ Python 실행
+    ├── ReactRunner.tsx                            ✅ React 렌더링
+    ├── SaveCollectionDialog.tsx                   ✅ 저장 다이얼로그
+    ├── CollectionCard.tsx                         ✅ 컬렉션 카드
+    ├── CollectionList.tsx                         ✅ 컬렉션 목록
+    └── CollectionViewDialog.tsx                   ✅ 상세보기 모달
+
+supabase/migrations/
+├── 20251225000001_add_collections_and_storage.sql ✅ 기본 테이블
+├── 20251225000002_add_python_support.sql          ✅ Python 지원
+└── 20251225000003_add_react_support.sql           ✅ React 지원
+```
+
+#### 📝 수정된 파일
+```
+src/App.tsx                              ✅ 라우트 추가 (/program-collections)
+src/components/layout/AppSidebar.tsx     ✅ 메뉴 추가 및 명칭 변경
+src/lib/supabase.ts                      ✅ Storage 헬퍼 함수
+```
+
+#### 🎯 주요 결정사항
+1. **HTML을 주요 사용 케이스로 설정**
+   - 가장 안정적이고 빠름
+   - 복잡한 앱은 HTML로 구현 권장
+
+2. **React/Python은 제한적 지원으로 표시**
+   - 간단한 컴포넌트/스크립트만 지원
+   - UI에서 명확히 제한사항 안내
+
+3. **에디터 로딩 → 모달 뷰어로 변경**
+   - 사용자 피드백 반영
+   - "프로그램 열기" 버튼으로 직관성 개선
+
+4. **Claude Artifact 도메인 허용 필수 안내**
+   - *.mediconsol.com 도메인 허용 필요
+   - 임베딩 가져오기 방법 상세 설명
+
+#### 🎨 카테고리
+```
+HTML 도구
+Claude 아티팩트
+Python 스크립트
+React 컴포넌트
+데이터 시각화
+계산기
+폼/템플릿
+일반
+```
+
+#### 📊 기대 효과
+- **통합 저장소**: 프롬프트 자산 + 실행 결과 + 외부 생성물 저장
+- **즉시 실행**: VSCode 없이 브라우저에서 바로 확인
+- **클라우드 보관**: Supabase Storage로 언제 어디서나 접근
+- **보안**: iframe sandbox로 본 서비스와 격리
+
+#### 📖 관련 문서
+- `/docs/program-collections.md` - 완전한 구현 문서
+
+---
+
 ## ✅ 완료된 작업 (Phase 4)
 
 ### 5. 인증 시스템 (100%)

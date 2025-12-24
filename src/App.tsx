@@ -17,6 +17,7 @@ import ProjectDetail from "./pages/ProjectDetail";
 import History from "./pages/History";
 import MyPage from "./pages/MyPage";
 import UserGuide from "./pages/UserGuide";
+import ProgramCollections from "./pages/ProgramCollections";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -132,6 +133,16 @@ const App = () => (
               <ProtectedRoute>
                 <DashboardLayout>
                   <UserGuide />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/program-collections"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <ProgramCollections />
                 </DashboardLayout>
               </ProtectedRoute>
             }

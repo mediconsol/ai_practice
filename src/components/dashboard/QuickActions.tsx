@@ -5,12 +5,12 @@ const actions = [
   {
     icon: Plus,
     title: "새 프로그램 만들기",
-    description: "AI 업무 프로그램 생성",
+    description: "AI 도구 생성",
     color: "from-primary to-info",
   },
   {
     icon: Sparkles,
-    title: "AI 실행",
+    title: "프롬프트 작업실",
     description: "프롬프트로 바로 실행",
     color: "from-success to-primary",
   },

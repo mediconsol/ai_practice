@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useExecuteAI } from "@/hooks/useExecuteAI";
 import { useSavePrompt } from "@/hooks/useSavePrompt";
 import { useSaveResult } from "@/hooks/useSaveResult";
@@ -85,6 +86,7 @@ export default function AIExecute() {
   const [isImproving, setIsImproving] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isSaveResultDialogOpen, setIsSaveResultDialogOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const executeAI = useExecuteAI();
   const savePrompt = useSavePrompt();
@@ -214,11 +216,48 @@ ${prompt}`,
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* Header */}
       <div className="animate-fade-in">
-        <h1 className="text-2xl font-bold text-foreground mb-1">AI 실행</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1">프롬프트 작업실</h1>
         <p className="text-muted-foreground">
-          프롬프트를 실행하고 결과를 확인하세요. 내부 AI 또는 외부 AI에서 실행할 수 있습니다.
+          자유롭게 프롬프트를 작성하고 실행하세요. 내부 AI 또는 외부 AI에서 실행할 수 있습니다.
         </p>
       </div>
+
+      {/* Info Card */}
+      <Collapsible open={isInfoOpen} onOpenChange={setIsInfoOpen}>
+        <div className="bg-accent/50 border border-primary/20 rounded-xl p-5 animate-fade-in">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <CollapsibleTrigger className="w-full text-left group">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-foreground mb-1">프롬프트 작업실이란?</h3>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isInfoOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </CollapsibleTrigger>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                정형화된 AI 도구 없이 자유롭게 프롬프트를 작성하고 실행할 수 있는 공간입니다.
+                다양한 AI 모델을 선택하여 즉시 테스트하고, 유용한 프롬프트는 저장하여 재사용할 수 있습니다.
+              </p>
+              <CollapsibleContent className="mt-3">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                  <strong>이렇게 활용하세요:</strong>
+                </p>
+                <ul className="text-sm text-muted-foreground ml-4 space-y-1.5">
+                  <li>• <strong>빠른 시작</strong>: 의료 업무에 자주 쓰이는 프롬프트 템플릿으로 바로 시작</li>
+                  <li>• <strong>프롬프트 저장</strong>: 잘 작동하는 프롬프트를 저장하여 반복 사용</li>
+                  <li>• <strong>결과 저장</strong>: AI 실행 결과를 마이페이지에 보관하고 관리</li>
+                  <li>• <strong>AI 모델 선택</strong>: 업무 특성에 맞는 AI 모델을 자유롭게 선택</li>
+                </ul>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-3">
+                  프롬프트 개선이 필요하면 "프롬프트 향상" 기능으로 더 나은 결과를 얻을 수 있습니다.
+                </p>
+              </CollapsibleContent>
+            </div>
+          </div>
+        </div>
+      </Collapsible>
 
       {/* Quick Prompts */}
       <div className="flex items-center gap-3 overflow-x-auto pb-2 animate-fade-in">

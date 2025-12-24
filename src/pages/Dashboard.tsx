@@ -38,7 +38,7 @@ export default function Dashboard() {
       {/* Stats Overview */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="내 AI 프로그램"
+          title="내 AI 도구"
           value={6}
           change="+2개 이번 주"
           changeType="positive"
@@ -52,7 +52,7 @@ export default function Dashboard() {
           icon={MessageSquareText}
         />
         <StatsCard
-          title="AI 실행 횟수"
+          title="프롬프트 실행 횟수"
           value={128}
           change="오늘 12회"
           changeType="positive"
@@ -71,9 +71,9 @@ export default function Dashboard() {
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">AI 업무 프로그램</h2>
+            <h2 className="text-lg font-semibold text-foreground">AI 도구 모음</h2>
             <p className="text-sm text-muted-foreground">
-              의료 업무에 바로 적용할 수 있는 AI 프로그램
+              의료 업무에 바로 적용할 수 있는 AI 도구
             </p>
           </div>
           <button className="text-sm font-medium text-primary hover:underline">

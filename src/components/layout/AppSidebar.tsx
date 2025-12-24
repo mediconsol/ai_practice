@@ -8,7 +8,8 @@ import {
   History,
   User,
   BookOpen,
-  Play
+  Play,
+  Archive
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -30,8 +31,9 @@ import {
 // 🚀 프로그램 실행
 const programMenuItems = [
   { title: "홈", url: "/", icon: LayoutDashboard },
-  { title: "AI 프로그램", url: "/programs", icon: Boxes },
-  { title: "AI 실행", url: "/ai-execute", icon: Play },
+  { title: "AI 도구 모음", url: "/programs", icon: Boxes },
+  { title: "프롬프트 작업실", url: "/ai-execute", icon: Play },
+  { title: "프로그램 수집함", url: "/program-collections", icon: Archive },
 ];
 
 // 📝 프롬프트 관리

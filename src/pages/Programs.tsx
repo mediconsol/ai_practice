@@ -2,11 +2,13 @@ import {
   Plus,
   Search,
   Filter,
-  Sparkles
+  Sparkles,
+  ChevronDown
 } from "lucide-react";
 import { ProgramCard } from "@/components/dashboard/ProgramCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePrograms, useDeleteProgram } from "@/hooks/usePrograms";
@@ -27,6 +29,7 @@ export default function Programs() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<ProgramWithPromptCount | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const { data: programs = [], isLoading } = usePrograms();
   const deleteProgram = useDeleteProgram();
@@ -93,9 +96,9 @@ export default function Programs() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">AI 업무 프로그램</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-1">AI 도구 모음</h1>
           <p className="text-muted-foreground">
-            의료 업무에 바로 적용할 수 있는 AI 프로그램을 선택하거나 직접 만드세요
+            의료 업무에 바로 적용할 수 있는 AI 도구를 선택하거나 직접 만드세요
           </p>
         </div>
         <Button className="gap-2" onClick={() => setCreateDialogOpen(true)}>
@@ -105,19 +108,40 @@ export default function Programs() {
       </div>
 
       {/* Info Card */}
-      <div className="bg-accent/50 border border-primary/20 rounded-xl p-5 animate-fade-in">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground mb-1">AI 프로그램이란?</h3>
-            <p className="text-sm text-muted-foreground">
-              의료 업무를 위한 독립적인 AI 애플리케이션입니다. Chat(대화형), Form(폼 기반), Template(템플릿) 타입으로 다양한 업무를 자동화할 수 있습니다.
-            </p>
+      <Collapsible open={isInfoOpen} onOpenChange={setIsInfoOpen}>
+        <div className="bg-accent/50 border border-primary/20 rounded-xl p-5 animate-fade-in">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <CollapsibleTrigger className="w-full text-left group">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold text-foreground mb-1">AI 도구란?</h3>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isInfoOpen ? 'rotate-180' : ''}`} />
+                </div>
+              </CollapsibleTrigger>
+              <p className="text-sm text-muted-foreground leading-relaxed mt-1">
+                의료 업무에 특화된 AI 프로그램으로, 반복적인 작업을 자동화하고 업무 효율을 높일 수 있습니다.
+                환자 안내문 작성, 문서 요약, 의료 데이터 분석 등 다양한 용도로 활용할 수 있습니다.
+              </p>
+              <CollapsibleContent className="mt-3">
+                <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                  <strong>3가지 타입의 AI 도구:</strong>
+                </p>
+                <ul className="text-sm text-muted-foreground ml-4 space-y-1.5">
+                  <li>• <strong>Chat (대화형)</strong>: AI와 대화하며 작업을 수행하는 방식</li>
+                  <li>• <strong>Form (폼 기반)</strong>: 입력 양식을 채워서 결과를 생성하는 방식</li>
+                  <li>• <strong>Template (템플릿)</strong>: 미리 정의된 템플릿을 선택하여 사용하는 방식</li>
+                </ul>
+                <p className="text-sm text-muted-foreground leading-relaxed mt-3">
+                  직접 만들거나, 기존 도구를 수정하여 업무에 맞게 커스터마이징할 수 있습니다.
+                </p>
+              </CollapsibleContent>
+            </div>
           </div>
         </div>
-      </div>
+      </Collapsible>
 
       {/* Program Type Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 animate-fade-in border-b border-border">
