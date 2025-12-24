@@ -25,6 +25,7 @@ import { useProjects, useDeleteProject } from "@/hooks/useProjects";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import type { Database } from "@/lib/supabase";
+import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { EditProjectDialog } from "@/components/projects/EditProjectDialog";
 
 type ProjectStatus = Database['public']['Tables']['projects']['Row']['status'];
@@ -120,6 +121,7 @@ function ProjectCard({ id, title, description, prompt_count, updated_at, status,
 export default function Projects() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState<"all" | ProjectStatus | null>("all");
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<{
     id: string;
@@ -179,7 +181,7 @@ export default function Projects() {
             관련 프롬프트를 프로젝트로 묶어 체계적으로 관리하세요
           </p>
         </div>
-        <Button className="gap-2">
+        <Button className="gap-2" onClick={() => setCreateDialogOpen(true)}>
           <Plus className="w-4 h-4" />
           새 프로젝트
         </Button>
@@ -269,12 +271,18 @@ export default function Projects() {
         <div className="text-center py-12 animate-fade-in">
           <FolderOpen className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-muted-foreground">프로젝트가 없습니다.</p>
-          <Button variant="outline" className="mt-4 gap-2">
+          <Button variant="outline" className="mt-4 gap-2" onClick={() => setCreateDialogOpen(true)}>
             <Plus className="w-4 h-4" />
             첫 프로젝트 만들기
           </Button>
         </div>
       )}
+
+      {/* Create Project Dialog */}
+      <CreateProjectDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
 
       {/* Edit Project Dialog */}
       {selectedProject && (
