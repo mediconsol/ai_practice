@@ -123,12 +123,12 @@ export function PromptCard({
           {usageCount}회 사용됨
         </span>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-8" onClick={handleCopy}>
-            <Copy className="w-3.5 h-3.5 mr-1.5" />
+          <Button variant="outline" size="sm" className="h-7 text-xs" onClick={handleCopy}>
+            <Copy className="w-3 h-3 mr-1" />
             복사
           </Button>
-          <Button size="sm" className="h-8" onClick={handleExecute}>
-            <Play className="w-3.5 h-3.5 mr-1.5" />
+          <Button size="sm" className="h-7 text-xs" onClick={handleExecute}>
+            <Play className="w-3 h-3 mr-1" />
             실행
           </Button>
         </div>

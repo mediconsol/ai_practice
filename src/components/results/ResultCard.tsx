@@ -229,14 +229,14 @@ export function ResultCard({
           <Button
             variant="outline"
             size="sm"
-            className="h-8"
+            className="h-7 text-xs"
             onClick={handleCopyResult}
           >
-            <Copy className="w-3.5 h-3.5 mr-1.5" />
+            <Copy className="w-3 h-3 mr-1" />
             복사
           </Button>
-          <Button size="sm" className="h-8" onClick={handleReExecute}>
-            <Play className="w-3.5 h-3.5 mr-1.5" />
+          <Button size="sm" className="h-7 text-xs" onClick={handleReExecute}>
+            <Play className="w-3 h-3 mr-1" />
             다시 실행
           </Button>
         </div>

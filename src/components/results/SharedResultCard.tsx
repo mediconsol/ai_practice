@@ -1,5 +1,11 @@
-import { Copy, Play, Eye, Download, Heart } from "lucide-react";
+import { Copy, Play, Eye, Download, Heart, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -25,6 +31,7 @@ interface SharedResultCardProps {
   viewCount: number;
   likeCount: number;
   onSaveToMyAssets?: (id: string) => void;
+  onViewDetail?: (id: string) => void;
 }
 
 export function SharedResultCard({
@@ -41,6 +48,7 @@ export function SharedResultCard({
   viewCount,
   likeCount,
   onSaveToMyAssets,
+  onViewDetail,
 }: SharedResultCardProps) {
   const navigate = useNavigate();
   const toggleLike = useToggleLike();
@@ -160,30 +168,73 @@ export function SharedResultCard({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8"
-            onClick={handleCopyResult}
-          >
-            <Copy className="w-3.5 h-3.5 mr-1.5" />
-            복사
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8"
-            onClick={handleReExecute}
-          >
-            <Play className="w-3.5 h-3.5 mr-1.5" />
-            실행
-          </Button>
-          <Button size="sm" className="h-8" onClick={handleSaveToMyAssets}>
-            <Download className="w-3.5 h-3.5 mr-1.5" />
-            내 자산에 저장
-          </Button>
-        </div>
+        <TooltipProvider>
+          <div className="flex items-center gap-0.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => onViewDetail?.(id)}
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>상세보기</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleCopyResult}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>결과 복사</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleReExecute}
+                >
+                  <Play className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>이 프롬프트로 실행</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="default"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={handleSaveToMyAssets}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>내 자산에 저장</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
       </div>
     </div>
   );

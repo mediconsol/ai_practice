@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PromptCard } from "@/components/dashboard/PromptCard";
 import { SharedResultCard } from "@/components/results/SharedResultCard";
+import { SharedResultDetailDialog } from "@/components/results/SharedResultDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,6 +31,8 @@ export default function Prompts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<SortOption>("popular");
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<string | null>(null);
 
   // 데이터 조회
   const { data: prompts = [], isLoading: isLoadingPrompts } = usePrompts();
@@ -54,6 +57,11 @@ export default function Prompts() {
 
   const handleSaveToMyAssets = (id: string) => {
     saveSharedToMyAssets.mutate(id);
+  };
+
+  const handleViewDetail = (id: string) => {
+    setSelectedResult(id);
+    setDetailDialogOpen(true);
   };
 
   // 필터링
@@ -413,6 +421,7 @@ export default function Prompts() {
                     viewCount={result.view_count}
                     likeCount={result.like_count}
                     onSaveToMyAssets={handleSaveToMyAssets}
+                    onViewDetail={handleViewDetail}
                   />
                 </div>
               ))}
@@ -420,6 +429,48 @@ export default function Prompts() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Shared Result Detail Dialog */}
+      {selectedResult && (
+        <SharedResultDetailDialog
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+          id={selectedResult}
+          title={
+            sharedResults.find((r) => r.id === selectedResult)?.title || ""
+          }
+          category={
+            sharedResults.find((r) => r.id === selectedResult)?.category || ""
+          }
+          prompt={
+            sharedResults.find((r) => r.id === selectedResult)?.prompt || ""
+          }
+          result={
+            sharedResults.find((r) => r.id === selectedResult)?.result || ""
+          }
+          memo={sharedResults.find((r) => r.id === selectedResult)?.memo}
+          aiProvider={
+            sharedResults.find((r) => r.id === selectedResult)?.ai_provider
+          }
+          aiModel={
+            sharedResults.find((r) => r.id === selectedResult)?.ai_model
+          }
+          executionTimeMs={
+            sharedResults.find((r) => r.id === selectedResult)
+              ?.execution_time_ms
+          }
+          createdAt={
+            sharedResults.find((r) => r.id === selectedResult)?.created_at || ""
+          }
+          viewCount={
+            sharedResults.find((r) => r.id === selectedResult)?.view_count || 0
+          }
+          likeCount={
+            sharedResults.find((r) => r.id === selectedResult)?.like_count || 0
+          }
+          onSaveToMyAssets={handleSaveToMyAssets}
+        />
+      )}
     </div>
   );
 }
