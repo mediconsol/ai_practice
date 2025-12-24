@@ -6,8 +6,9 @@ import {
   Settings,
   FolderOpen,
   History,
-  Zap,
-  User
+  User,
+  BookOpen,
+  Play
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -26,21 +27,24 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const mainMenuItems = [
+// 🚀 프로그램 실행
+const programMenuItems = [
   { title: "홈", url: "/", icon: LayoutDashboard },
   { title: "AI 프로그램", url: "/programs", icon: Boxes },
-  { title: "프롬프트 자산", url: "/prompts", icon: MessageSquareText },
-  { title: "AI 실행", url: "/ai-execute", icon: Sparkles },
+  { title: "AI 실행", url: "/ai-execute", icon: Play },
 ];
 
-const workMenuItems = [
-  { title: "마이페이지", url: "/my-page", icon: User },
+// 📝 프롬프트 관리
+const promptMenuItems = [
+  { title: "내 프롬프트", url: "/prompts", icon: MessageSquareText },
   { title: "내 프로젝트", url: "/projects", icon: FolderOpen },
   { title: "실행 히스토리", url: "/history", icon: History },
 ];
 
-const systemMenuItems = [
-  { title: "빠른 실행", url: "/quick", icon: Zap },
+// ⚙️ 설정 & 도움말
+const settingsMenuItems = [
+  { title: "사용자 매뉴얼", url: "/user-guide", icon: BookOpen },
+  { title: "마이페이지", url: "/my-page", icon: User },
   { title: "설정", url: "/settings", icon: Settings },
 ];
 
@@ -92,28 +96,28 @@ export function AppSidebar() {
       <SidebarContent className="px-2 py-4">
         <SidebarGroup>
           <SidebarGroupLabel className="px-3 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider mb-2">
-            메인
+            🚀 프로그램 실행
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            {renderMenuItems(mainMenuItems)}
+            {renderMenuItems(programMenuItems)}
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup className="mt-6">
           <SidebarGroupLabel className="px-3 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider mb-2">
-            작업
+            📝 프롬프트 관리
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            {renderMenuItems(workMenuItems)}
+            {renderMenuItems(promptMenuItems)}
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup className="mt-6">
           <SidebarGroupLabel className="px-3 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider mb-2">
-            시스템
+            ⚙️ 설정 & 도움말
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            {renderMenuItems(systemMenuItems)}
+            {renderMenuItems(settingsMenuItems)}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

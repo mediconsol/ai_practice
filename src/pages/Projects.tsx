@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,11 +21,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { projects, type Project } from "@/data/projects";
+import { useProjects, useDeleteProject } from "@/hooks/useProjects";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
+import type { Database } from "@/lib/supabase";
 
-type ProjectCardProps = Project;
+type ProjectStatus = Database['public']['Tables']['projects']['Row']['status'];
 
-function ProjectCard({ title, description, promptCount, lastModified, status }: ProjectCardProps) {
+interface ProjectCardProps {
+  id: string;
+  title: string;
+  description: string | null;
+  prompt_count: number;
+  updated_at: string;
+  status: ProjectStatus;
+  onDelete: (id: string, title: string) => void;
+}
+
+function ProjectCard({ id, title, description, prompt_count, updated_at, status, onDelete }: ProjectCardProps) {
   return (
     <div className="group bg-card rounded-xl border border-border p-5 transition-all duration-300 hover:shadow-lg hover:border-primary/30 animate-fade-in">
       <div className="flex items-start justify-between mb-3">
@@ -59,7 +72,13 @@ function ProjectCard({ title, description, promptCount, lastModified, status }: 
                 복제
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(id, title);
+                }}
+              >
                 <Trash2 className="w-4 h-4 mr-2" />
                 삭제
               </DropdownMenuItem>
@@ -79,12 +98,12 @@ function ProjectCard({ title, description, promptCount, lastModified, status }: 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <FileText className="w-3.5 h-3.5" />
-            <span>프롬프트 {promptCount}개</span>
+            <span>프롬프트 {prompt_count}개</span>
           </div>
         </div>
         <div className="flex items-center gap-1">
           <Calendar className="w-3.5 h-3.5" />
-          <span>{lastModified}</span>
+          <span>{formatDistanceToNow(new Date(updated_at), { addSuffix: true, locale: ko })}</span>
         </div>
       </div>
     </div>
@@ -93,14 +112,35 @@ function ProjectCard({ title, description, promptCount, lastModified, status }: 
 
 export default function Projects() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filter, setFilter] = useState<"all" | "active" | "completed" | "archived">("all");
+  const [filter, setFilter] = useState<"all" | ProjectStatus | null>("all");
+  const { data: projects = [], isLoading } = useProjects();
+  const deleteProjectMutation = useDeleteProject();
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === "all" || project.status === filter;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           project.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesFilter = filter === "all" || project.status === filter;
+      return matchesSearch && matchesFilter;
+    });
+  }, [projects, searchQuery, filter]);
+
+  const handleDelete = (id: string, title: string) => {
+    if (confirm(`"${title}" 프로젝트를 삭제하시겠습니까?`)) {
+      deleteProjectMutation.mutate(id);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">프로젝트를 불러오는 중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -129,7 +169,7 @@ export default function Projects() {
           <p className="text-sm text-muted-foreground">진행 중</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 text-center">
-          <p className="text-3xl font-bold text-primary">{projects.reduce((acc, p) => acc + p.promptCount, 0)}</p>
+          <p className="text-3xl font-bold text-primary">{projects.reduce((acc, p) => acc + p.prompt_count, 0)}</p>
           <p className="text-sm text-muted-foreground">총 프롬프트</p>
         </div>
       </div>
@@ -180,11 +220,19 @@ export default function Projects() {
       {/* Projects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredProjects.map((project, index) => (
-          <div 
-            key={project.title}
+          <div
+            key={project.id}
             style={{ animationDelay: `${index * 50}ms` }}
           >
-            <ProjectCard {...project} />
+            <ProjectCard
+              id={project.id}
+              title={project.title}
+              description={project.description}
+              prompt_count={project.prompt_count}
+              updated_at={project.updated_at}
+              status={project.status}
+              onDelete={handleDelete}
+            />
           </div>
         ))}
       </div>

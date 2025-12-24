@@ -183,7 +183,7 @@ export default function MyPage() {
           </TabsTrigger>
           <TabsTrigger value="prompts" className="gap-2">
             <FileText className="w-4 h-4" />
-            프롬프트 자산
+            내 프롬프트
           </TabsTrigger>
         </TabsList>
 
@@ -290,7 +290,7 @@ export default function MyPage() {
           )}
         </TabsContent>
 
-        {/* 프롬프트 자산 탭 */}
+        {/* 내 프롬프트 탭 */}
         <TabsContent value="prompts" className="space-y-4">
           {/* Search & Filter */}
           <div className="flex flex-col md:flex-row gap-4">

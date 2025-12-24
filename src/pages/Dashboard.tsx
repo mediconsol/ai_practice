@@ -97,7 +97,7 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-lg font-semibold text-foreground">최근 사용 프롬프트</h2>
-            <p className="text-sm text-muted-foreground">나의 프롬프트 자산에서 빠르게 실행</p>
+            <p className="text-sm text-muted-foreground">내 프롬프트에서 빠르게 실행</p>
           </div>
           <button className="text-sm font-medium text-primary hover:underline">
             라이브러리 →

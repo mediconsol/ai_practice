@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { useSignIn } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,8 +11,15 @@ import { LogIn, Loader2 } from "lucide-react";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const signInMutation = useSignIn();
+
+  // 로그인 성공 시 대시보드로 이동
+  useEffect(() => {
+    if (signInMutation.isSuccess) {
+      navigate("/");
+    }
+  }, [signInMutation.isSuccess, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,32 +29,7 @@ export default function Login() {
       return;
     }
 
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      toast.success("로그인 성공!", {
-        description: `환영합니다, ${data.user?.email}`,
-      });
-
-      // 대시보드로 이동
-      navigate("/");
-    } catch (error: any) {
-      console.error("Login error:", error);
-      toast.error("로그인 실패", {
-        description: error.message === "Invalid login credentials"
-          ? "이메일 또는 비밀번호가 올바르지 않습니다."
-          : error.message,
-      });
-    } finally {
-      setLoading(false);
-    }
+    signInMutation.mutate({ email, password });
   };
 
   return (
@@ -77,7 +59,7 @@ export default function Login() {
                 placeholder="user@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
+                disabled={signInMutation.isPending}
                 required
               />
             </div>
@@ -97,7 +79,7 @@ export default function Login() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
+                disabled={signInMutation.isPending}
                 required
               />
             </div>
@@ -106,9 +88,9 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700"
-              disabled={loading}
+              disabled={signInMutation.isPending}
             >
-              {loading ? (
+              {signInMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   로그인 중...

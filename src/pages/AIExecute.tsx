@@ -90,7 +90,7 @@ export default function AIExecute() {
   const savePrompt = useSavePrompt();
   const saveResult = useSaveResult();
 
-  // 프롬프트 자산에서 실행 버튼으로 넘어온 경우
+  // 내 프롬프트에서 실행 버튼으로 넘어온 경우
   useEffect(() => {
     if (location.state?.prompt) {
       setPrompt(location.state.prompt);
@@ -333,7 +333,30 @@ ${prompt}`,
           <div className="bg-card rounded-xl border border-border p-5 min-h-[400px]">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold text-card-foreground">실행 결과</h2>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
+                {result && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 h-8"
+                      onClick={() => setIsSaveDialogOpen(true)}
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      내 프롬프트로 저장
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 h-8"
+                      onClick={() => setIsSaveResultDialogOpen(true)}
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      마이페이지에 저장
+                    </Button>
+                    <div className="h-4 w-px bg-border mx-1" />
+                  </>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -423,7 +446,7 @@ ${prompt}`,
             </div>
 
             {result && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+              <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs text-muted-foreground">
                     생성 시간: {executionTime ? `${(executionTime / 1000).toFixed(2)}초` : '-'} • {selectedProvider.name}
@@ -435,25 +458,6 @@ ${prompt}`,
                       {' '}출력: {tokenUsage.completion_tokens?.toLocaleString() || '-'})
                     </span>
                   )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={() => setIsSaveDialogOpen(true)}
-                  >
-                    <Save className="w-4 h-4" />
-                    프롬프트 저장
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="gap-1.5"
-                    onClick={() => setIsSaveResultDialogOpen(true)}
-                  >
-                    <Save className="w-4 h-4" />
-                    실행 결과 저장
-                  </Button>
                 </div>
               </div>
             )}

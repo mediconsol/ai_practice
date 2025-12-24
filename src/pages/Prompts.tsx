@@ -1,7 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PromptCard } from "@/components/dashboard/PromptCard";
 import { SharedResultCard } from "@/components/results/SharedResultCard";
 import { SharedResultDetailDialog } from "@/components/results/SharedResultDetailDialog";
+import { ConvertToProgramDialog } from "@/components/prompts/ConvertToProgramDialog";
+import { EditPromptDialog } from "@/components/prompts/EditPromptDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,22 +25,45 @@ import {
   useSharedResults,
   useSaveSharedToMyAssets,
 } from "@/hooks/useExecutionResults";
+import { usePrograms } from "@/hooks/usePrograms";
 import { PROMPT_CATEGORIES_WITH_ALL } from "@/constants/categories";
 
 type SortOption = "latest" | "popular" | "likes" | "views";
 
 export default function Prompts() {
+  const [searchParams] = useSearchParams();
+  const programId = searchParams.get("program");
+
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState<SortOption>("popular");
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedResult, setSelectedResult] = useState<string | null>(null);
+  const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const [promptToConvert, setPromptToConvert] = useState<{
+    title: string;
+    content: string;
+    category: string;
+  } | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [promptToEdit, setPromptToEdit] = useState<{
+    id: string;
+    title: string;
+    content: string;
+    category: string;
+  } | null>(null);
 
   // 데이터 조회
   const { data: prompts = [], isLoading: isLoadingPrompts } = usePrompts();
   const { data: sharedResults = [], isLoading: isLoadingShared } =
     useSharedResults();
+  const { data: programs = [] } = usePrograms();
+
+  // 현재 선택된 프로그램 찾기
+  const selectedProgram = programId
+    ? programs.find((p) => p.id === programId)
+    : null;
 
   // Mutations
   const toggleFavorite = useToggleFavorite();
@@ -47,6 +73,19 @@ export default function Prompts() {
   // 핸들러
   const handleToggleFavorite = (id: string, currentFavorite: boolean) => {
     toggleFavorite.mutate({ id, isFavorite: currentFavorite });
+  };
+
+  const handleEdit = (id: string) => {
+    const prompt = prompts.find((p) => p.id === id);
+    if (prompt) {
+      setPromptToEdit({
+        id: prompt.id,
+        title: prompt.title,
+        content: prompt.content,
+        category: prompt.category,
+      });
+      setEditDialogOpen(true);
+    }
   };
 
   const handleDelete = (id: string, title: string) => {
@@ -64,14 +103,25 @@ export default function Prompts() {
     setDetailDialogOpen(true);
   };
 
+  const handleConvertToProgram = (
+    id: string,
+    title: string,
+    content: string,
+    category: string
+  ) => {
+    setPromptToConvert({ title, content, category });
+    setConvertDialogOpen(true);
+  };
+
   // 필터링
   const filteredPrompts = prompts.filter((prompt) => {
+    const matchesProgram = !programId || prompt.program_id === programId;
     const matchesCategory =
       selectedCategory === "전체" || prompt.category === selectedCategory;
     const matchesSearch =
       prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prompt.content.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesProgram && matchesCategory && matchesSearch;
   });
 
   const filteredSharedResults = sharedResults
@@ -112,11 +162,22 @@ export default function Prompts() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
         <div>
           <h1 className="text-2xl font-bold text-foreground mb-1">
-            프롬프트 자산
+            {selectedProgram ? selectedProgram.title : "내 프롬프트"}
           </h1>
           <p className="text-muted-foreground">
-            나만의 프롬프트를 저장하고 관리하세요. 다른 의료진이 공유한 우수 사례도 확인할 수 있습니다.
+            {selectedProgram
+              ? selectedProgram.description || "프로그램의 프롬프트를 확인하고 실행하세요"
+              : "나만의 프롬프트를 저장하고 관리하세요. 다른 의료진이 공유한 우수 사례도 확인할 수 있습니다."}
           </p>
+          {selectedProgram && (
+            <Button
+              variant="link"
+              className="px-0 h-auto mt-2 text-sm"
+              onClick={() => window.location.href = "/prompts"}
+            >
+              ← 전체 프롬프트로 돌아가기
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" className="gap-2">
@@ -268,7 +329,9 @@ export default function Prompts() {
                     isFavorite={prompt.is_favorite}
                     usageCount={prompt.usage_count}
                     onToggleFavorite={handleToggleFavorite}
+                    onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onConvertToProgram={handleConvertToProgram}
                   />
                 </div>
               ))}
@@ -469,6 +532,26 @@ export default function Prompts() {
             sharedResults.find((r) => r.id === selectedResult)?.like_count || 0
           }
           onSaveToMyAssets={handleSaveToMyAssets}
+        />
+      )}
+
+      {/* Convert to Program Dialog */}
+      {promptToConvert && (
+        <ConvertToProgramDialog
+          open={convertDialogOpen}
+          onOpenChange={setConvertDialogOpen}
+          promptTitle={promptToConvert.title}
+          promptContent={promptToConvert.content}
+          promptCategory={promptToConvert.category}
+        />
+      )}
+
+      {/* Edit Prompt Dialog */}
+      {promptToEdit && (
+        <EditPromptDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          prompt={promptToEdit}
         />
       )}
     </div>

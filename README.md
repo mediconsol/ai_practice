@@ -19,7 +19,16 @@
 
 ### 핵심 기능
 
-- **AI 프로그램 관리**: 문서 요약, 환자 안내문, 교육 자료 등 8개 카테고리
+- **3가지 프로그램 타입**:
+  - **Chat Type**: AI 대화형 (실시간 아티팩트 생성)
+  - **Form Type**: 구조화된 입력/출력 (동적 폼 생성)
+  - **Template Type**: 템플릿 기반 (AI 수정 도우미)
+
+- **6개 샘플 프로그램**:
+  - 환자 안내문 생성기, 진료 기록 요약기, 의학 논문 도우미 (Chat)
+  - 진단서 작성기, 처방전 생성기 (Form)
+  - 수술 동의서 생성기 (Template - 3개 템플릿 포함)
+
 - **프롬프트 자산화**: 프롬프트 생성, 저장, 재사용, 가져오기/내보내기
 - **AI 실행 환경**: OpenAI, Google Gemini, Anthropic Claude 통합
 - **실행 히스토리**: 모든 AI 실행 기록 저장 및 관리
@@ -45,9 +54,10 @@
 - **Row Level Security** - 데이터 보안
 
 ### AI 통합
-- **OpenAI API** - GPT-4o-mini
-- **Google Gemini API** - Gemini Pro
-- **Anthropic API** - Claude 3.5 Sonnet
+- **OpenAI API** - GPT-4, GPT-4o (스트리밍 지원)
+- **Google Gemini API** - Gemini Pro, Ultra (스트리밍 지원)
+- **Anthropic Claude API** - Claude 3.5 Sonnet, Opus (스트리밍 지원)
+- **Factory Pattern** - Provider 추상화로 쉬운 확장
 
 ---
 
@@ -188,10 +198,20 @@ supabase link --project-ref <YOUR_PROJECT_ID>
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 
+# AI API Keys
+VITE_OPENAI_API_KEY=sk-proj-xxxxx
+VITE_CLAUDE_API_KEY=sk-ant-xxxxx
+VITE_GEMINI_API_KEY=AIzaSyxxxxx
+
 # 개발 모드
 VITE_DEV_MODE=true
 VITE_API_TIMEOUT=30000
 ```
+
+**API 키 발급:**
+- OpenAI: https://platform.openai.com/api-keys
+- Claude: https://console.anthropic.com/settings/keys
+- Gemini: https://makersuite.google.com/app/apikey
 
 **주의**: `.env.local` 파일은 절대 Git에 커밋하지 마세요.
 
@@ -201,6 +221,8 @@ VITE_API_TIMEOUT=30000
 
 상세한 문서는 `docs/` 폴더를 참조하세요:
 
+- **[프로그램 시스템 재설계 계획](./docs/PROGRAM_REDESIGN_PLAN.md)** - 전체 개발 계획 및 MVP 완료 현황
+- **[AI Provider 통합 가이드](./docs/AI_PROVIDERS_INTEGRATION.md)** - OpenAI, Claude, Gemini 통합
 - [구현 현황 리뷰](./docs/IMPLEMENTATION_REVIEW.md) - 전체 진행 상황
 - [개발 로드맵](./docs/TODO_ROADMAP.md) - 향후 개발 계획
 - [빠른 체크리스트](./docs/QUICK_CHECKLIST.md) - 즉시 할 일
@@ -212,24 +234,28 @@ VITE_API_TIMEOUT=30000
 
 ## 🎯 개발 현황
 
-**현재 진행률**: 60%
+**현재 진행률**: 85% (MVP 완료!)
 
-✅ **완료** (Phase 1-2):
+✅ **완료** (Phase 1-5):
 - 프론트엔드 UI 6개 페이지
 - Supabase 백엔드 인프라
 - 3개 Edge Functions 배포
-- AI 통합 (OpenAI, Gemini)
+- **AI Provider 통합** (OpenAI, Claude, Gemini - 스트리밍 지원)
+- **프로그램 시스템 재설계** (Chat, Form, Template 타입)
+- 6개 샘플 프로그램 구현
+- 사용 통계 트래킹
+- 에러 바운더리, 성능 최적화
 
-🔄 **진행중** (Phase 3):
-- 인증 시스템 구현
-- DB 연동 완료
+🔄 **진행중** (Phase 6):
+- 추가 샘플 프로그램 개발 (선택사항)
 
-⏳ **예정** (Phase 4-6):
+⏳ **예정** (향후):
 - 프롬프트 마법사
-- 프로그램/프로젝트 고도화
+- 프로그램 요청 시스템
+- 리워드 & 마켓플레이스
 - 프로덕션 배포
 
-상세한 로드맵은 [TODO_ROADMAP.md](./docs/TODO_ROADMAP.md) 참조
+상세한 로드맵은 [PROGRAM_REDESIGN_PLAN.md](./docs/PROGRAM_REDESIGN_PLAN.md) 참조
 
 ---
 

@@ -1,4 +1,4 @@
-import { Copy, Play, Star, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { Copy, Play, Star, MoreVertical, Pencil, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,7 +19,9 @@ interface PromptCardProps {
   isFavorite?: boolean;
   usageCount: number;
   onToggleFavorite?: (id: string, currentFavorite: boolean) => void;
+  onEdit?: (id: string) => void;
   onDelete?: (id: string, title: string) => void;
+  onConvertToProgram?: (id: string, title: string, content: string, category: string) => void;
 }
 
 export function PromptCard({
@@ -30,7 +32,9 @@ export function PromptCard({
   isFavorite = false,
   usageCount,
   onToggleFavorite,
+  onEdit,
   onDelete,
+  onConvertToProgram,
 }: PromptCardProps) {
   const navigate = useNavigate();
 
@@ -50,10 +54,24 @@ export function PromptCard({
     }
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit) {
+      onEdit(id);
+    }
+  };
+
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onDelete) {
       onDelete(id, title);
+    }
+  };
+
+  const handleConvertToProgram = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onConvertToProgram) {
+      onConvertToProgram(id, title, content, category);
     }
   };
 
@@ -93,9 +111,17 @@ export function PromptCard({
                 복사
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleEdit}>
+                <Pencil className="w-4 h-4 mr-2" />
+                수정
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleToggleFavorite}>
                 <Star className="w-4 h-4 mr-2" />
                 {isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleConvertToProgram}>
+                <Sparkles className="w-4 h-4 mr-2" />
+                프로그램으로 만들기
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem

@@ -4,14 +4,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
 import Programs from "./pages/Programs";
+import ProgramRunner from "./pages/ProgramRunner";
 import Prompts from "./pages/Prompts";
 import AIExecute from "./pages/AIExecute";
 import Projects from "./pages/Projects";
 import History from "./pages/History";
 import MyPage from "./pages/MyPage";
+import UserGuide from "./pages/UserGuide";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -20,10 +24,11 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
         <Routes>
           {/* 인증 페이지 (로그인 없이 접근 가능) */}
           <Route path="/login" element={<Login />} />
@@ -47,6 +52,16 @@ const App = () => (
                 <DashboardLayout>
                   <Programs />
                 </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/programs/:id/run"
+            element={
+              <ProtectedRoute>
+                <ErrorBoundary>
+                  <ProgramRunner />
+                </ErrorBoundary>
               </ProtectedRoute>
             }
           />
@@ -100,12 +115,23 @@ const App = () => (
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/user-guide"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <UserGuide />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
 
           {/* 404 페이지 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

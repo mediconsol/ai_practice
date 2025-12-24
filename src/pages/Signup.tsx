@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { useSignUp } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,9 +17,20 @@ export default function Signup() {
   const [hospital, setHospital] = useState("");
   const [department, setDepartment] = useState("");
   const [agreed, setAgreed] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const signUpMutation = useSignUp();
+
+  // 회원가입 성공 시 성공 화면 표시
+  useEffect(() => {
+    if (signUpMutation.isSuccess) {
+      setSuccess(true);
+      // 3초 후 로그인 페이지로 이동
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+    }
+  }, [signUpMutation.isSuccess, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,43 +56,13 @@ export default function Signup() {
       return;
     }
 
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            hospital: hospital || null,
-            department: department || null,
-          },
-        },
-      });
-
-      if (error) throw error;
-
-      // 회원가입 성공
-      setSuccess(true);
-      toast.success("회원가입 성공!", {
-        description: "이메일 인증을 확인해주세요.",
-      });
-
-      // 3초 후 로그인 페이지로 이동
-      setTimeout(() => {
-        navigate("/login");
-      }, 3000);
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      toast.error("회원가입 실패", {
-        description: error.message === "User already registered"
-          ? "이미 가입된 이메일입니다."
-          : error.message,
-      });
-    } finally {
-      setLoading(false);
-    }
+    signUpMutation.mutate({
+      email,
+      password,
+      fullName,
+      hospital,
+      department,
+    });
   };
 
   if (success) {
@@ -149,7 +130,7 @@ export default function Signup() {
                 placeholder="user@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
+                disabled={signUpMutation.isPending}
                 required
               />
             </div>
@@ -164,7 +145,7 @@ export default function Signup() {
                 placeholder="홍길동"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                disabled={loading}
+                disabled={signUpMutation.isPending}
                 required
               />
             </div>
@@ -179,7 +160,7 @@ export default function Signup() {
                 placeholder="최소 6자 이상"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
+                disabled={signUpMutation.isPending}
                 required
               />
             </div>
@@ -194,7 +175,7 @@ export default function Signup() {
                 placeholder="비밀번호 재입력"
                 value={passwordConfirm}
                 onChange={(e) => setPasswordConfirm(e.target.value)}
-                disabled={loading}
+                disabled={signUpMutation.isPending}
                 required
               />
             </div>
@@ -211,19 +192,19 @@ export default function Signup() {
                   placeholder="예: 서울대학교병원"
                   value={hospital}
                   onChange={(e) => setHospital(e.target.value)}
-                  disabled={loading}
+                  disabled={signUpMutation.isPending}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="department">진료과</Label>
+                <Label htmlFor="department">부서/직책</Label>
                 <Input
                   id="department"
                   type="text"
-                  placeholder="예: 내과"
+                  placeholder="예: 내과 / 의사"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  disabled={loading}
+                  disabled={signUpMutation.isPending}
                 />
               </div>
             </div>
@@ -234,7 +215,7 @@ export default function Signup() {
                 id="terms"
                 checked={agreed}
                 onCheckedChange={(checked) => setAgreed(checked as boolean)}
-                disabled={loading}
+                disabled={signUpMutation.isPending}
               />
               <label
                 htmlFor="terms"
@@ -249,9 +230,9 @@ export default function Signup() {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700"
-              disabled={loading}
+              disabled={signUpMutation.isPending}
             >
-              {loading ? (
+              {signUpMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   가입 중...

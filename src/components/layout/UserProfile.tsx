@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useSignOut } from "@/hooks/useAuth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,47 +11,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, Settings, User, ChevronDown } from "lucide-react";
-import { toast } from "sonner";
 
 export function UserProfile() {
-  const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const { user } = useAuthContext();
+  const signOutMutation = useSignOut();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    // 사용자 정보 가져오기
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-
-      // 프로필 정보 가져오기
-      if (user) {
-        supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single()
-          .then(({ data }) => {
-            setProfile(data);
-          });
-      }
+  const handleLogout = () => {
+    signOutMutation.mutate(undefined, {
+      onSuccess: () => {
+        navigate("/login");
+      },
     });
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast.success("로그아웃 되었습니다");
-      navigate("/login");
-    } catch (error) {
-      toast.error("로그아웃 실패");
-    }
   };
 
   if (!user) return null;
 
   // 이니셜 생성 (이름 또는 이메일 첫 글자)
   const getInitials = () => {
-    const name = profile?.full_name || user.user_metadata?.full_name;
+    const name = user.user_metadata?.full_name;
     if (name) {
       const parts = name.split(" ");
       if (parts.length >= 2) {
@@ -62,10 +40,10 @@ export function UserProfile() {
     return user.email?.[0].toUpperCase() || "U";
   };
 
-  const displayName = profile?.full_name || user.user_metadata?.full_name || "사용자";
+  const displayName = user.user_metadata?.full_name || "사용자";
   const displayEmail = user.email || "";
-  const displayHospital = profile?.hospital || user.user_metadata?.hospital;
-  const displayDepartment = profile?.department || user.user_metadata?.department;
+  const displayHospital = user.user_metadata?.hospital;
+  const displayDepartment = user.user_metadata?.department;
 
   return (
     <DropdownMenu>

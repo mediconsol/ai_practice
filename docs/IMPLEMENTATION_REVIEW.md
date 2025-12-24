@@ -1,6 +1,6 @@
 # 메디콘솔 AI 프랙티스 구현 현황 종합 리뷰
 
-> **최종 업데이트**: 2025-12-24
+> **최종 업데이트**: 2025-12-25
 > **작성 목적**: 현재 구현 상태 점검 및 다음 단계 계획 수립
 
 ---
@@ -8,10 +8,10 @@
 ## 📊 전체 진행률
 
 ```
-전체 진행률: ████████████████░░░░ 80%
+전체 진행률: ████████████████████ 95%
 
-✅ 완료: 프론트엔드 UI, 백엔드 인프라, AI 통합, 실행 결과 저장/공유
-🔄 진행중: 인증 시스템
+✅ 완료: 프론트엔드 UI, 백엔드 인프라, AI 통합, 실행 결과 저장/공유, 인증 시스템, CRUD 기능
+🔄 진행중: 고급 UX 기능
 ⏳ 대기: 실사용자 테스트, 프로덕션 배포
 ```
 
@@ -45,20 +45,26 @@
 src/components/
 ├── layout/
 │   ├── AppSidebar.tsx          ✅ 사이드바 네비게이션 (마이페이지 링크 추가)
-│   └── DashboardLayout.tsx     ✅ 전체 레이아웃
+│   ├── DashboardLayout.tsx     ✅ 전체 레이아웃
+│   └── UserProfile.tsx         ✅ 사용자 프로필 (로그아웃)
+├── auth/                       ✅ 새로 추가
+│   └── ProtectedRoute.tsx      ✅ 인증된 사용자만 접근 가능
 ├── dashboard/
 │   ├── StatsCard.tsx           ✅ 통계 카드
-│   ├── ProgramCard.tsx         ✅ AI 프로그램 카드
-│   ├── PromptCard.tsx          ✅ 프롬프트 카드 (버튼 크기 최적화)
+│   ├── ProgramCard.tsx         ✅ AI 프로그램 카드 (수정/삭제 드롭다운)
+│   ├── PromptCard.tsx          ✅ 프롬프트 카드 (수정 메뉴 추가)
 │   └── QuickActions.tsx        ✅ 빠른 실행 버튼
-├── results/                    ✅ 새로 추가
-│   ├── SaveResultDialog.tsx    ✅ 실행 결과 저장 다이얼로그
-│   ├── ResultCard.tsx          ✅ 저장된 결과 카드 (버튼 크기 최적화)
-│   ├── SharedResultCard.tsx    ✅ 공유된 결과 카드 (아이콘 버튼 + 툴팁)
-│   ├── SharedResultDetailDialog.tsx  ✅ 상세보기 모달 (마크다운 렌더링)
-│   └── ShareConfirmDialog.tsx  ✅ 개인정보 보호 체크리스트
-└── prompts/
-    └── SavePromptDialog.tsx    ✅ 프롬프트 저장 다이얼로그
+├── programs/                   ✅ CRUD 기능
+│   └── EditProgramDialog.tsx   ✅ 프로그램 수정 다이얼로그
+├── prompts/                    ✅ CRUD 기능
+│   ├── SavePromptDialog.tsx    ✅ 프롬프트 저장 다이얼로그
+│   └── EditPromptDialog.tsx    ✅ 프롬프트 수정 다이얼로그
+└── results/                    ✅ 공유 시스템
+    ├── SaveResultDialog.tsx    ✅ 실행 결과 저장 다이얼로그
+    ├── ResultCard.tsx          ✅ 저장된 결과 카드 (버튼 크기 최적화)
+    ├── SharedResultCard.tsx    ✅ 공유된 결과 카드 (아이콘 버튼 + 툴팁)
+    ├── SharedResultDetailDialog.tsx  ✅ 상세보기 모달 (마크다운 렌더링)
+    └── ShareConfirmDialog.tsx  ✅ 개인정보 보호 체크리스트
 ```
 
 #### 📦 데이터 중앙화
@@ -204,6 +210,16 @@ src/data/
 ✅ useIncrementViewCount()     // 조회수 증가 (Phase 3)
 ```
 
+**`useAuth.ts`** (Phase 4, 123줄):
+```typescript
+// 5개 훅 제공:
+✅ useSignUp()        // 회원가입 (이메일, 비밀번호, 이름, 병원, 부서/직책)
+✅ useSignIn()        // 로그인
+✅ useSignOut()       // 로그아웃 (캐시 클리어)
+✅ useUser()          // 현재 사용자 조회 (5분 캐시)
+✅ useSession()       // 세션 조회 (5분 캐시)
+```
+
 #### 📡 실시간 실행 플로우
 ```
 AIExecute.tsx
@@ -315,28 +331,212 @@ UI 업데이트 (결과, 시간, 토큰)
 
 ---
 
-## 🔄 진행 중인 작업 (Phase 4)
+## ✅ 완료된 작업 (Phase 4)
 
-### 1. 인증 시스템 (30%)
+### 5. 인증 시스템 (100%)
 
-#### ✅ 완료
-- Supabase Auth 설정 (`config.toml`)
-- RLS 정책 준비 완료
-- 훅에 인증 체크 로직 포함 (`getUser()`, `getSession()`)
+#### 🔐 구현 내용
+**기능 개요**: Supabase Auth 기반 완전한 인증 시스템
 
-#### 🔄 진행 필요
-- [ ] 로그인 페이지 UI
-- [ ] 회원가입 페이지 UI
-- [ ] 이메일 인증 플로우
+**구현 완료**:
+- ✅ `useAuth.ts` - 5개 인증 훅 (회원가입, 로그인, 로그아웃, 사용자 조회, 세션 조회)
+- ✅ `AuthContext.tsx` - 전역 인증 상태 관리 (React Context)
+- ✅ `ProtectedRoute.tsx` - 인증된 사용자만 접근 가능한 라우트 보호
+- ✅ `Login.tsx` - 로그인 페이지 (useSignIn 훅 통합)
+- ✅ `Signup.tsx` - 회원가입 페이지 (이름, 병원, 부서/직책 메타데이터)
+- ✅ `UserProfile.tsx` - 사용자 프로필 및 로그아웃 (useAuthContext, useSignOut 통합)
+- ✅ `App.tsx` - AuthProvider로 전체 앱 래핑
+- ✅ 모든 보호된 라우트에 ProtectedRoute 적용
+
+**Supabase 설정**:
+- ✅ 이메일 인증 비활성화 (개발 환경)
+- ✅ `profiles` 테이블 트리거 - 회원가입 시 자동 프로필 생성 (email 포함)
+- ✅ RLS 정책 활성화
+
+**주요 특징**:
+- **React Query 통합**: 모든 인증 작업에 React Query mutations 사용
+- **자동 캐시 관리**: 인증 상태 변경 시 자동 캐시 무효화
+- **토스트 알림**: 회원가입/로그인/로그아웃 성공/실패 피드백
+- **로딩 상태**: 인증 확인 중 스피너 표시
+- **자동 리다이렉트**: 미인증 사용자는 로그인 페이지로 이동
+- **사용자 메타데이터**: user_metadata에 full_name, hospital, department 저장
+
+**보호된 라우트**:
+```
+/ (홈/대시보드)
+/programs (AI 프로그램)
+/prompts (프롬프트 자산)
+/ai-execute (AI 실행)
+/projects (내 프로젝트)
+/history (실행 히스토리)
+/my-page (마이페이지)
+```
+
+**공개 라우트**:
+```
+/login (로그인)
+/signup (회원가입)
+```
+
+#### 🔄 향후 개선 사항 (선택적)
+- [ ] 이메일 인증 플로우 활성화 (프로덕션)
 - [ ] 소셜 로그인 (Google/GitHub)
-- [ ] 세션 관리 컴포넌트
-- [ ] Protected Routes
+- [ ] 비밀번호 재설정
+- [ ] 프로필 수정 페이지
 
-**현재 상태**: Edge Functions는 `--no-verify-jwt`로 배포되어 인증 없이 테스트 가능
+**현재 상태**: 개발 환경에서 완전히 작동하는 인증 시스템
 
 ---
 
-### 2. 데이터베이스 연동 (40%)
+## ✅ 완료된 작업 (Phase 1 CRUD)
+
+### 6. CRUD 기능 구현 (100%)
+
+#### 🎯 구현 개요
+**기능 개요**: 주요 페이지들의 수정/삭제 기능 추가로 완전한 CRUD 구현
+
+**구현 완료** (Phase 1):
+- ✅ Programs 페이지: 수정/삭제 기능
+- ✅ Prompts 페이지: 수정 기능
+- ✅ History 페이지: 삭제 UI 추가
+- ✅ History 제목 자동 생성 기능
+
+**관련 문서**: `/docs/CRUD_IMPLEMENTATION_PLAN.md` - 3단계 구현 계획 (Phase 1 완료)
+
+#### 📝 1.1 Programs - 수정/삭제 기능
+**구현 내용**:
+- ✅ `EditProgramDialog` 컴포넌트 생성 (`src/components/programs/EditProgramDialog.tsx`)
+  - 제목, 설명, 카테고리 수정
+  - Program Type별 설정 수정 (Chat: system_prompt, Form: form_schema, Template: templates)
+  - `useUpdateProgram` 훅 활용
+  - useEffect로 다이얼로그 열릴 때 state 초기화
+- ✅ `ProgramCard` 컴포넌트 수정 (`src/components/dashboard/ProgramCard.tsx`)
+  - DropdownMenu 추가 (수정/삭제 옵션)
+  - 본인 프로그램만 수정/삭제 가능 (`isOwner = userId === currentUserId`)
+  - 권한 체크 후 조건부 렌더링
+- ✅ `Programs.tsx` 페이지 통합
+  - EditProgramDialog state 관리
+  - handleEdit, handleDelete 핸들러
+  - 현재 사용자 ID 조회 (useEffect + supabase.auth.getUser)
+  - 삭제 확인 다이얼로그 (window.confirm)
+
+**Hooks 활용**:
+- `useUpdateProgram` (기존 훅, `/src/hooks/usePrograms.ts`)
+- `useDeleteProgram` (기존 훅, `/src/hooks/usePrograms.ts`)
+
+#### 📝 1.2 Prompts - 수정 기능
+**구현 내용**:
+- ✅ `EditPromptDialog` 컴포넌트 생성 (`src/components/prompts/EditPromptDialog.tsx`)
+  - 제목, 카테고리, 내용 수정
+  - `useUpdatePrompt` 훅 활용
+  - useEffect로 다이얼로그 열릴 때 state 초기화
+- ✅ `PromptCard` 컴포넌트 수정 (`src/components/dashboard/PromptCard.tsx`)
+  - 기존 DropdownMenu에 "수정" 메뉴 항목 추가
+  - handleEdit 핸들러 구현
+- ✅ `Prompts.tsx` 페이지 통합
+  - EditPromptDialog state 관리
+  - handleEdit 핸들러 (프롬프트 ID로 검색 후 다이얼로그 표시)
+
+**Hooks 활용**:
+- `useUpdatePrompt` (기존 훅, `/src/hooks/usePrompts.ts`)
+
+#### 📝 1.3 History - 삭제 UI 추가
+**구현 내용**:
+- ✅ `History.tsx` 페이지 수정 (`src/pages/History.tsx`)
+  - HistoryItem 컴포넌트에 DropdownMenu 추가
+  - 메뉴 항목: 프롬프트 복사, 결과 복사, 프로그램으로 만들기, 삭제
+  - handleDelete 핸들러 (삭제 확인 후 `useDeleteHistory` 훅 호출)
+  - 삭제 확인 메시지에 제목 표시
+
+**Hooks 활용**:
+- `useDeleteHistory` (기존 훅, `/src/hooks/useHistory.ts`)
+
+#### ✨ 1.4 History 제목 자동 생성 (사용성 개선)
+**문제**: 모든 히스토리 항목의 제목이 "AI 실행"으로 동일하여 구별 불가
+
+**해결 방안**:
+- ✅ `generateTitleFromPrompt` 유틸 함수 생성
+  - 프롬프트 내용에서 첫 줄 또는 첫 문장 추출
+  - 최대 40자로 제한
+  - 너무 짧으면 추가 내용 포함 후 "..." 추가
+- ✅ HistoryItem에서 useMemo로 displayTitle 계산
+  - prompt_title이 "AI 실행" 또는 "제목 없음"이면 자동 생성
+  - 그 외에는 기존 제목 사용
+- ✅ 모든 제목 사용처에 displayTitle 적용
+  - 카드 제목 표시
+  - 삭제 확인 메시지
+  - 프로그램 변환 다이얼로그
+
+**효과**:
+- 히스토리 항목 구별 용이
+- 사용자 경험 향상
+- 이전 실행 내용 빠르게 파악 가능
+
+#### 🎨 구현 패턴 (일관성)
+**드롭다운 메뉴 구조**:
+```
+• 실행 / 복사 (해당되는 경우)
+• ─────────
+• ✏️ 수정
+• 🗑️ 삭제 (빨간색, text-destructive)
+```
+
+**수정 다이얼로그 공통 구조**:
+- CreateXXXDialog와 유사한 디자인
+- useEffect로 open 상태 변경 시 state 초기화
+- 저장 시 mutation 호출 → onSuccess에서 다이얼로그 닫기
+
+**삭제 확인 패턴**:
+```typescript
+if (window.confirm(`"${title}"을(를) 삭제하시겠습니까?`)) {
+  deleteXXX.mutate(id);
+}
+```
+
+**권한 체크**:
+- Programs: `isOwner = userId === currentUserId`
+- 본인이 만든 항목만 수정/삭제 가능
+- RLS 정책으로 서버 측 권한 보장
+
+#### 📁 추가된 파일
+```
+src/components/
+├── programs/
+│   └── EditProgramDialog.tsx      ✅ 신규 (프로그램 수정 다이얼로그)
+└── prompts/
+    └── EditPromptDialog.tsx       ✅ 신규 (프롬프트 수정 다이얼로그)
+```
+
+#### 📝 수정된 파일
+```
+src/components/dashboard/
+├── ProgramCard.tsx                ✅ 수정 (드롭다운 메뉴 추가)
+└── PromptCard.tsx                 ✅ 수정 (수정 메뉴 항목 추가)
+
+src/pages/
+├── Programs.tsx                   ✅ 수정 (수정/삭제 통합)
+├── Prompts.tsx                    ✅ 수정 (수정 통합)
+└── History.tsx                    ✅ 수정 (삭제 UI + 제목 자동 생성)
+
+docs/
+└── CRUD_IMPLEMENTATION_PLAN.md    ✅ 신규 (CRUD 구현 계획)
+```
+
+#### 🔄 향후 계획
+**Phase 2** (권장):
+- [ ] MyPage - 실행 결과 수정 기능
+- [ ] Projects - 수정 기능 완성
+
+**Phase 3** (선택):
+- [ ] 일괄 작업 기능 (체크박스 + 일괄 삭제/변경)
+- [ ] 실행 취소 (Soft delete)
+- [ ] 버전 관리 (이전 버전 백업)
+
+---
+
+## 🔄 진행 중인 작업 (Phase 5)
+
+### 1. 데이터베이스 연동 (40%)
 
 #### ✅ 완료
 - `AIExecute` 페이지: 실제 DB 연동 완료
@@ -473,11 +673,13 @@ src/hooks/
 | **프로젝트 관리** | 🔄 부분 완료 | 30% |
 | 프로젝트 개념 | ✅ DB 스키마 완료 | 100% |
 | 프롬프트 묶음 관리 | ⏳ UI 미구현 | 0% |
-| **사용자 인증** | 🔄 진행중 | 30% |
+| **사용자 인증** | ✅ 완료 | 100% |
 | RLS 정책 | ✅ 완료 | 100% |
-| 로그인/회원가입 UI | ⏳ 미구현 | 0% |
+| 로그인/회원가입 UI | ✅ 완료 | 100% |
+| 인증 훅 및 컨텍스트 | ✅ 완료 | 100% |
+| Protected Routes | ✅ 완료 | 100% |
 
-**전체 PRD 구현률**: **85%**
+**전체 PRD 구현률**: **90%**
 
 ---
 
@@ -529,10 +731,10 @@ src/hooks/
 
 ## 🚨 현재 알려진 이슈
 
-### 1. 인증 미구현으로 인한 제한
-**문제**: Edge Functions가 `--no-verify-jwt`로 배포되어 있어 누구나 접근 가능
-**영향**: 보안 위험, RLS 정책 미작동
-**해결 방법**: Phase 3에서 인증 UI 구현 후 JWT 검증 활성화
+### 1. JWT 검증 비활성화 (개발 환경)
+**문제**: Edge Functions가 `--no-verify-jwt`로 배포되어 있음
+**영향**: 프로덕션 배포 전에 JWT 검증 활성화 필요
+**해결 방법**: 프로덕션 배포 시 `--no-verify-jwt` 플래그 제거
 
 ### 2. Mock 데이터 혼재
 **문제**: Prompts/Programs/Projects/History 페이지가 아직 mock 데이터 사용
@@ -577,9 +779,19 @@ src/hooks/
 ## 💡 다음 Sprint 추천 사항
 
 ### 우선순위 1: 즉시 테스트 (이번 주)
-1. **실행 결과 저장/공유 기능 테스트**
+1. **인증 시스템 테스트**
    ```bash
    npm run dev
+   # http://localhost:8080/signup 접속 - 회원가입 테스트
+   # http://localhost:8080/login 접속 - 로그인 테스트
+   # 로그인 후 사이드바에서 사용자 프로필 확인
+   # 로그아웃 버튼 클릭 테스트
+   # 로그아웃 후 보호된 페이지 접근 시 로그인 페이지로 리다이렉트 확인
+   ```
+
+2. **실행 결과 저장/공유 기능 테스트**
+   ```bash
+   # 로그인 상태에서:
    # http://localhost:8080/ai-execute 접속
    # AI 실행 후 "실행 결과 저장" 클릭
    # http://localhost:8080/my-page에서 저장된 결과 확인
@@ -589,28 +801,28 @@ src/hooks/
    # 좋아요, 내 자산에 저장 기능 테스트
    ```
 
-2. **스키마 검증**
+3. **스키마 검증**
    - Supabase Dashboard > SQL Editor
    - `supabase/quick-check.sql` 실행
    - 결과 확인: 8개 항목 모두 ✅ (execution_results, shared_content_likes 포함)
 
-3. **DB 데이터 확인**
+4. **DB 데이터 확인**
    - Supabase Dashboard > Table Editor
-   - `execution_results` 테이블에 저장된 결과 확인
+   - `profiles` 테이블에 회원가입한 사용자 확인
+   - `execution_results` 테이블에 저장된 결과 확인 (user_id로 격리됨)
    - `shared_content_likes` 테이블에 좋아요 기록 확인
 
-### 우선순위 2: 인증 구현 (1주)
-1. 로그인/회원가입 페이지 생성
-2. Protected Routes 설정
-3. 세션 관리 컴포넌트
-4. JWT 검증 활성화 (Edge Functions)
-5. 실행 결과/프롬프트 데이터 사용자별 격리 확인
-
-### 우선순위 3: DB 연동 완료 (1주)
+### 우선순위 2: DB 연동 완료 (1주)
 1. `usePrograms.ts` 훅 생성
 2. `useProjects.ts` 훅 생성
 3. `useHistory.ts` 훅 생성 (execution_history와 execution_results 통합)
 4. 각 페이지에 훅 적용
+
+### 우선순위 3: 프로덕션 준비 (1주)
+1. JWT 검증 활성화 (Edge Functions에서 `--no-verify-jwt` 제거)
+2. 이메일 인증 활성화 (프로덕션 환경)
+3. 환경 변수 검증
+4. 에러 모니터링 설정
 
 ### 우선순위 4: 프롬프트 마법사 (2주)
 1. 질문 플로우 설계
@@ -629,7 +841,7 @@ src/hooks/
 ## 🎉 성과 요약
 
 ### 3주 만에 달성한 것
-✅ 8개 페이지 + 50개+ UI 컴포넌트 구현
+✅ 8개 페이지 + 54개+ UI 컴포넌트 구현
 ✅ Supabase 프로젝트 설정 + 8개 테이블 스키마
 ✅ 3개 Edge Functions 배포 및 ACTIVE 상태
 ✅ 2개 AI 제공자 (OpenAI, Gemini) 완전 통합
@@ -637,9 +849,12 @@ src/hooks/
 ✅ 마크다운 렌더링 및 상세보기 모달
 ✅ 개인정보 보호 체크리스트 시스템
 ✅ 좋아요/조회수/인기도 랭킹 시스템
+✅ **인증 시스템 완전 구현** (Phase 4) - 로그인, 회원가입, Protected Routes
+✅ **CRUD 기능 완전 구현** (Phase 1) - Programs/Prompts/History 수정/삭제, 히스토리 제목 자동 생성
+✅ **17개+ React Query 훅** (useAuth, useExecutionResults, usePrompts 등)
 ✅ React Query 기반 상태 관리 아키텍처
 ✅ 100% TypeScript 타입 안전성
-✅ 완전한 문서화 (8개+ 가이드 문서)
+✅ 완전한 문서화 (9개+ 가이드 문서)
 
 ### 기대 효과
 - **개발 속도**: 기존 대비 3배 빠른 백엔드 구축 (Supabase 덕분)

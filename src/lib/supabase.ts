@@ -27,6 +27,50 @@ export type Enums<T extends keyof Database['public']['Enums']> =
 
 // Database 타입은 Supabase CLI로 자동 생성 예정
 // supabase gen types typescript --local > src/lib/database.types.ts
+
+// 프로그램 타입 정의
+export type ProgramType = 'chat' | 'form' | 'template';
+
+// 프로그램 설정 타입
+export interface ProgramConfig {
+  // Chat Type
+  system_prompt?: string;
+  artifacts_enabled?: boolean;
+
+  // Form Type
+  form_schema?: FormField[];
+  output_template?: string;
+
+  // Template Type
+  templates?: ProgramTemplate[];
+
+  // Common
+  ai_provider?: 'openai' | 'claude' | 'gemini';
+  ai_model?: string;
+}
+
+export interface FormField {
+  id: string;
+  label: string;
+  type: 'text' | 'textarea' | 'number' | 'select' | 'date' | 'checkbox';
+  required: boolean;
+  placeholder?: string;
+  options?: string[]; // for select
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+}
+
+export interface ProgramTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  content: string;
+  variables?: string[];
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -55,6 +99,8 @@ export interface Database {
           gradient: string | null;
           is_public: boolean;
           is_new: boolean;
+          program_type: ProgramType;
+          config: ProgramConfig | null;
           usage_count: number;
           created_at: string;
           updated_at: string;
@@ -117,6 +163,7 @@ export interface Database {
       project_status: 'active' | 'completed' | 'archived';
       execution_status: 'success' | 'error';
       ai_provider: 'openai' | 'gemini' | 'claude' | 'internal';
+      program_type: 'chat' | 'form' | 'template';
     };
   };
 }
