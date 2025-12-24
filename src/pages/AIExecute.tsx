@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useExecuteAI } from "@/hooks/useExecuteAI";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const quickPrompts = [
   { title: "문서 요약", description: "긴 문서를 핵심만 요약" },
@@ -271,8 +273,10 @@ export default function AIExecute() {
                   </p>
                 </div>
               ) : result ? (
-                <div className="prose prose-sm max-w-none text-card-foreground whitespace-pre-wrap">
-                  {result}
+                <div className="prose prose-sm max-w-none dark:prose-invert text-card-foreground">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {result}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <div className="text-center">
