@@ -65,7 +65,7 @@ export default function ProjectDetail() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">프로젝트를 불러오는 중...</p>
+          <p className="text-muted-foreground">세트를 불러오는 중...</p>
         </div>
       </div>
     );
@@ -76,11 +76,11 @@ export default function ProjectDetail() {
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <FolderOpen className="w-16 h-16 text-muted-foreground/30 mb-4" />
         <h2 className="text-xl font-semibold text-foreground mb-2">
-          프로젝트를 찾을 수 없습니다
+          세트를 찾을 수 없습니다
         </h2>
         <Button variant="outline" onClick={() => navigate("/projects")}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          프로젝트 목록으로
+          세트 목록으로
         </Button>
       </div>
     );

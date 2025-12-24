@@ -165,7 +165,7 @@ export default function Projects() {
   };
 
   const handleDelete = (id: string, title: string) => {
-    if (confirm(`"${title}" 프로젝트를 삭제하시겠습니까?`)) {
+    if (confirm(`"${title}" 세트를 삭제하시겠습니까?`)) {
       deleteProjectMutation.mutate(id);
     }
   };
@@ -175,7 +175,7 @@ export default function Projects() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">프로젝트를 불러오는 중...</p>
+          <p className="text-muted-foreground">세트를 불러오는 중...</p>
         </div>
       </div>
     );
@@ -186,14 +186,14 @@ export default function Projects() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">내 프로젝트</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-1">프롬프트 세트</h1>
           <p className="text-muted-foreground">
-            관련 프롬프트를 프로젝트로 묶어 체계적으로 관리하세요
+            관련 프롬프트를 세트로 묶어 체계적으로 관리하세요
           </p>
         </div>
         <Button className="gap-2" onClick={() => setCreateDialogOpen(true)}>
           <Plus className="w-4 h-4" />
-          새 프로젝트
+          새 세트
         </Button>
       </div>
 
@@ -201,7 +201,7 @@ export default function Projects() {
       <div className="grid grid-cols-3 gap-4 animate-fade-in">
         <div className="bg-card rounded-xl border border-border p-4 text-center">
           <p className="text-3xl font-bold text-foreground">{projects.length}</p>
-          <p className="text-sm text-muted-foreground">전체 프로젝트</p>
+          <p className="text-sm text-muted-foreground">전체 세트</p>
         </div>
         <div className="bg-card rounded-xl border border-border p-4 text-center">
           <p className="text-3xl font-bold text-success">{projects.filter(p => p.status === "active").length}</p>
@@ -217,8 +217,8 @@ export default function Projects() {
       <div className="flex flex-col md:flex-row gap-4 animate-fade-in">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="프로젝트 검색..." 
+          <Input
+            placeholder="세트 검색..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -281,10 +281,10 @@ export default function Projects() {
       {filteredProjects.length === 0 && (
         <div className="text-center py-12 animate-fade-in">
           <FolderOpen className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">프로젝트가 없습니다.</p>
+          <p className="text-muted-foreground">세트가 없습니다.</p>
           <Button variant="outline" className="mt-4 gap-2" onClick={() => setCreateDialogOpen(true)}>
             <Plus className="w-4 h-4" />
-            첫 프로젝트 만들기
+            첫 세트 만들기
           </Button>
         </div>
       )}

@@ -85,9 +85,9 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>새 프로젝트 만들기</DialogTitle>
+          <DialogTitle>새 세트 만들기</DialogTitle>
           <DialogDescription>
-            프롬프트를 묶어서 관리할 프로젝트를 생성하세요
+            프롬프트를 묶어서 관리할 세트를 생성하세요
           </DialogDescription>
         </DialogHeader>
 
@@ -98,7 +98,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             </Label>
             <Input
               id="title"
-              placeholder="프로젝트 제목을 입력하세요"
+              placeholder="세트 제목을 입력하세요"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -110,13 +110,13 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             <Label htmlFor="description">설명</Label>
             <Textarea
               id="description"
-              placeholder="프로젝트 설명을 입력하세요 (선택사항)"
+              placeholder="세트 설명을 입력하세요 (선택사항)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
             />
             <p className="text-xs text-muted-foreground">
-              이 프로젝트의 목적이나 내용을 간단히 설명해주세요
+              이 세트의 목적이나 내용을 간단히 설명해주세요
             </p>
           </div>
 

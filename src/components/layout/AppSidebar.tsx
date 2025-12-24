@@ -37,7 +37,7 @@ const programMenuItems = [
 // 📝 프롬프트 관리
 const promptMenuItems = [
   { title: "내 프롬프트", url: "/prompts", icon: MessageSquareText },
-  { title: "내 프로젝트", url: "/projects", icon: FolderOpen },
+  { title: "프롬프트 세트", url: "/projects", icon: FolderOpen },
   { title: "실행 히스토리", url: "/history", icon: History },
 ];
 

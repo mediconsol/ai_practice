@@ -91,9 +91,9 @@ export function EditProjectDialog({ open, onOpenChange, project }: EditProjectDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>프로젝트 수정</DialogTitle>
+          <DialogTitle>세트 수정</DialogTitle>
           <DialogDescription>
-            프로젝트 정보를 수정하세요
+            세트 정보를 수정하세요
           </DialogDescription>
         </DialogHeader>
 
@@ -104,7 +104,7 @@ export function EditProjectDialog({ open, onOpenChange, project }: EditProjectDi
             </Label>
             <Input
               id="title"
-              placeholder="프로젝트 제목"
+              placeholder="세트 제목"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
@@ -115,7 +115,7 @@ export function EditProjectDialog({ open, onOpenChange, project }: EditProjectDi
             <Label htmlFor="description">설명</Label>
             <Textarea
               id="description"
-              placeholder="프로젝트 설명을 입력하세요 (선택사항)"
+              placeholder="세트 설명을 입력하세요 (선택사항)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}

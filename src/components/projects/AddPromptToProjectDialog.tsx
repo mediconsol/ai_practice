@@ -78,7 +78,7 @@ export function AddPromptToProjectDialog({
         <DialogHeader>
           <DialogTitle>프롬프트 추가</DialogTitle>
           <DialogDescription>
-            프로젝트에 추가할 프롬프트를 선택하세요
+            세트에 추가할 프롬프트를 선택하세요
           </DialogDescription>
         </DialogHeader>
 
