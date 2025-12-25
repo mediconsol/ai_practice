@@ -105,8 +105,8 @@ export default function Signup() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-teal-500 to-blue-600 flex items-center justify-center">
-              <UserPlus className="h-6 w-6 text-white" />
+            <div className="h-10 w-10 rounded-lg flex items-center justify-center">
+              <img src="/favicon.svg" alt="메디콘솔 로고" className="h-10 w-10" />
             </div>
             <div>
               <CardTitle className="text-2xl">회원가입</CardTitle>
