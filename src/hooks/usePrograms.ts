@@ -30,12 +30,25 @@ export function usePrograms() {
 
       if (error) throw error;
 
-      // prompt_count 추가
-      return (data as any[]).map((program) => ({
-        ...program,
-        prompt_count: program.prompts[0]?.count || 0,
-        prompts: undefined, // 불필요한 필드 제거
-      })) as ProgramWithPromptCount[];
+      // Manually fetch author information for each program
+      const programsWithAuthors = await Promise.all(
+        (data || []).map(async (program) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, hospital, department')
+            .eq('id', program.user_id)
+            .maybeSingle();
+
+          return {
+            ...program,
+            prompt_count: program.prompts[0]?.count || 0,
+            prompts: undefined,
+            author: profile || null,
+          };
+        })
+      );
+
+      return programsWithAuthors as any[];
     },
   });
 }
@@ -84,11 +97,25 @@ export function usePublicPrograms() {
 
       if (error) throw error;
 
-      return (data as any[]).map((program) => ({
-        ...program,
-        prompt_count: program.prompts[0]?.count || 0,
-        prompts: undefined,
-      })) as ProgramWithPromptCount[];
+      // Manually fetch author information for each program
+      const programsWithAuthors = await Promise.all(
+        (data || []).map(async (program) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, hospital, department')
+            .eq('id', program.user_id)
+            .maybeSingle();
+
+          return {
+            ...program,
+            prompt_count: program.prompts[0]?.count || 0,
+            prompts: undefined,
+            author: profile || null,
+          };
+        })
+      );
+
+      return programsWithAuthors as any[];
     },
   });
 }

@@ -93,12 +93,12 @@ export default function UserGuide() {
               1
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-1">AI 실행</h3>
+              <h3 className="font-semibold text-lg mb-1">프롬프트 작업실에서 AI 실행</h3>
               <p className="text-muted-foreground mb-2">
-                AI 실행 페이지에서 프롬프트를 작성하고 실행하여 원하는 결과를 얻습니다.
+                프롬프트 작업실에서 프롬프트를 작성하고 실행하여 원하는 결과를 얻습니다.
               </p>
               <Button variant="outline" size="sm" onClick={() => navigate("/ai-execute")}>
-                AI 실행 바로가기 <ArrowRight className="w-4 h-4 ml-1" />
+                프롬프트 작업실 바로가기 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
@@ -147,11 +147,52 @@ export default function UserGuide() {
                 생성된 프로그램을 실행하고, 공개 설정을 통해 다른 사용자와 공유합니다.
               </p>
               <Button variant="outline" size="sm" onClick={() => navigate("/programs")}>
-                AI 프로그램 바로가기 <ArrowRight className="w-4 h-4 ml-1" />
+                AI도구 제작실 바로가기 <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* AI소스 수집함 */}
+      <section className="space-y-4 animate-fade-in bg-gradient-to-br from-info/5 to-primary/5 border border-info/20 rounded-xl p-6">
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
+          <Sparkles className="w-6 h-6 text-info" />
+          AI소스 수집함 (NEW!)
+        </h2>
+        <p className="text-muted-foreground leading-relaxed">
+          ChatGPT, Claude, Gemini 등 AI 도구가 생성한 HTML/React/Python 프로그램과 Claude Artifact를
+          한곳에서 실행하고 보관할 수 있습니다.
+        </p>
+        <div className="bg-card rounded-lg p-4 border border-border space-y-3">
+          <h3 className="font-semibold">지원하는 형식</h3>
+          <ul className="text-sm space-y-2 text-muted-foreground ml-4 list-disc">
+            <li>
+              <strong>HTML</strong>: AI가 생성한 HTML 코드를 즉시 실행 (가장 안정적, 권장)
+            </li>
+            <li>
+              <strong>Claude Artifact</strong>: Claude에서 생성한 아티팩트를 임베딩하여 보관
+            </li>
+            <li>
+              <strong>React</strong>: 간단한 UI 컴포넌트 실행 (제한적)
+            </li>
+            <li>
+              <strong>Python</strong>: 데이터 분석 스크립트 실행 (Pyodide, 제한적)
+            </li>
+          </ul>
+        </div>
+        <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+          <h3 className="font-semibold mb-2 text-primary">핵심 기능</h3>
+          <ul className="text-sm space-y-1 text-muted-foreground ml-4 list-disc">
+            <li>2분할 에디터: 코드 입력 + 실시간 미리보기</li>
+            <li>샌드박스 환경: 안전하게 격리된 실행 환경</li>
+            <li>클라우드 저장: Supabase Storage에 안전하게 보관</li>
+            <li>공유 기능: 다른 의료 전문가와 유용한 도구 공유</li>
+          </ul>
+        </div>
+        <Button variant="outline" onClick={() => navigate("/program-collections")}>
+          AI소스 수집함 바로가기 <ArrowRight className="w-4 h-4 ml-1" />
+        </Button>
       </section>
 
       {/* AI Form Generator 활용법 */}
@@ -227,10 +268,11 @@ export default function UserGuide() {
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold mb-2">2. 프로그램 공유 전 체크사항</h3>
+            <h3 className="font-semibold mb-2">2. 공유 전 체크사항</h3>
             <ul className="text-sm space-y-1 text-muted-foreground ml-4 list-disc">
-              <li>개인정보나 민감한 정보가 포함되지 않았는지 확인</li>
-              <li>프로그램 제목과 설명을 명확히 작성</li>
+              <li><strong>프로그램/컬렉션 공유 시</strong>: 개인정보나 민감한 정보가 포함되지 않았는지 확인</li>
+              <li><strong>AI소스 수집함 공유 시</strong>: HTML/Python/React 소스 코드에 환자 정보가 없는지 확인</li>
+              <li>제목과 설명을 명확히 작성</li>
               <li>카테고리를 정확히 설정</li>
             </ul>
           </div>
@@ -240,6 +282,8 @@ export default function UserGuide() {
               <li>자주 사용하는 프롬프트는 프로그램으로 저장</li>
               <li>프로젝트 단위로 관련 프롬프트 관리</li>
               <li>실행 히스토리를 주기적으로 확인하여 재사용</li>
+              <li>외부 AI 도구가 생성한 유용한 HTML 소스코드는 AI소스 수집함에 저장</li>
+              <li>공유 컬렉션 탭에서 다른 사용자의 유용한 도구 발견</li>
             </ul>
           </div>
         </div>

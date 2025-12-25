@@ -17,9 +17,10 @@ interface CollectionListProps {
   collections: Collection[];
   onOpen: (collection: Collection) => void;
   onDelete: (id: string) => void;
+  onToggleShare?: (id: string, currentShared: boolean) => void;
 }
 
-export function CollectionList({ collections, onOpen, onDelete }: CollectionListProps) {
+export function CollectionList({ collections, onOpen, onDelete, onToggleShare }: CollectionListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("전체");
 
@@ -98,6 +99,7 @@ export function CollectionList({ collections, onOpen, onDelete }: CollectionList
               collection={collection}
               onOpen={onOpen}
               onDelete={onDelete}
+              onToggleShare={onToggleShare}
             />
           ))}
         </div>

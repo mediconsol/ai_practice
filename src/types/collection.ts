@@ -20,6 +20,12 @@ export interface Collection {
   is_favorite: boolean;
   created_at: string;
   updated_at: string;
+
+  // Phase 2: 공유 관련 필드
+  is_shared: boolean;
+  shared_at: string | null;
+  view_count: number;
+  like_count: number;
 }
 
 /**
@@ -54,6 +60,16 @@ export interface UpdateCollectionInput {
   sourceCode?: string;
   memo?: string;
   is_favorite?: boolean;
+}
+
+/**
+ * 컬렉션 좋아요 인터페이스
+ */
+export interface CollectionLike {
+  id: string;
+  collection_id: string;
+  user_id: string;
+  created_at: string;
 }
 
 /**

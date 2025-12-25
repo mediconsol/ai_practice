@@ -1,6 +1,8 @@
 import { memo } from "react";
-import { LucideIcon, ArrowRight, Users, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { LucideIcon, ArrowRight, Users, MoreVertical, Pencil, Trash2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +22,16 @@ interface ProgramCardProps {
   usageCount: number;
   gradient: string;
   isNew?: boolean;
+  isPublic?: boolean;
   userId?: string;
   currentUserId?: string;
+  author?: {
+    id: string;
+    email?: string;
+    full_name?: string;
+    hospital?: string;
+    department?: string;
+  } | null;
   onStart?: (programId: string) => void;
   onEdit?: (programId: string) => void;
   onDelete?: (programId: string, title: string) => void;
@@ -37,8 +47,10 @@ export const ProgramCard = memo(function ProgramCard({
   usageCount,
   gradient,
   isNew = false,
+  isPublic = false,
   userId,
   currentUserId,
+  author,
   onStart,
   onEdit,
   onDelete,
@@ -69,13 +81,18 @@ export const ProgramCard = memo(function ProgramCard({
       )}>
         <div className="absolute top-3 right-3 flex items-center gap-2">
           {isNew && (
-            <span className="text-xs font-semibold bg-primary-foreground/90 text-primary px-2 py-0.5 rounded-full">
+            <Badge className="text-xs font-semibold bg-primary-foreground/90 text-primary border-0">
               NEW
-            </span>
+            </Badge>
           )}
-          <span className="text-xs font-medium bg-primary-foreground/20 text-primary-foreground backdrop-blur-sm px-2 py-0.5 rounded-full">
+          {isPublic && isOwner && (
+            <Badge className="text-xs font-semibold bg-success/90 text-white border-0">
+              공유됨
+            </Badge>
+          )}
+          <Badge className="text-xs font-medium bg-primary-foreground/20 text-primary-foreground backdrop-blur-sm border-0">
             {category}
-          </span>
+          </Badge>
           {isOwner && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -109,7 +126,7 @@ export const ProgramCard = memo(function ProgramCard({
           {description}
         </p>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span>프롬프트 {promptCount}개</span>
             <div className="flex items-center gap-1">
@@ -117,11 +134,32 @@ export const ProgramCard = memo(function ProgramCard({
               <span>{usageCount}회 사용</span>
             </div>
           </div>
-          
+
+          {/* Author Info - only show if author exists and not owner */}
+          {author && !isOwner && (
+            <div className="flex items-center gap-2 pt-2 border-t border-border/50">
+              <Avatar className="h-5 w-5 border">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-info text-white text-[10px] font-semibold">
+                  {author.full_name?.substring(0, 2).toUpperCase() || <User className="w-3 h-3" />}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col flex-1 min-w-0">
+                <span className="text-xs font-medium text-foreground truncate">
+                  {author.full_name || '익명'}
+                </span>
+                {author.hospital && (
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    {author.hospital}{author.department && ` · ${author.department}`}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           <Button
             size="sm"
             variant="ghost"
-            className="gap-1 group-hover:text-primary"
+            className="gap-1 group-hover:text-primary w-full"
             onClick={() => onStart?.(id)}
           >
             시작

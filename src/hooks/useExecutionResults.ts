@@ -54,14 +54,31 @@ export function useSharedResults() {
   return useQuery({
     queryKey: ["shared-results"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from("execution_results")
         .select("*")
         .eq("is_shared", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as ExecutionResult[];
+
+      // Manually fetch author information for each result
+      const resultsWithAuthors = await Promise.all(
+        (data || []).map(async (result) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("id, email, full_name, hospital, department")
+            .eq("id", result.user_id)
+            .maybeSingle();
+
+          return {
+            ...result,
+            author: profile || null,
+          };
+        })
+      );
+
+      return resultsWithAuthors as any[];
     },
   });
 }
@@ -394,12 +411,17 @@ export function useCheckLike(resultId: string) {
         return false;
       }
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("shared_content_likes")
         .select("id")
         .eq("user_id", session.user.id)
         .eq("result_id", resultId)
-        .single();
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking like:", error);
+        return false;
+      }
 
       return !!data;
     },

@@ -3,45 +3,45 @@ import {
   Search,
   Filter,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Share2
 } from "lucide-react";
 import { ProgramCard } from "@/components/dashboard/ProgramCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { usePrograms, useDeleteProgram } from "@/hooks/usePrograms";
+import { useMyPrograms, useDeleteProgram } from "@/hooks/usePrograms";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { getIcon } from "@/lib/iconMap";
 import { CreateProgramDialog } from "@/components/programs/CreateProgramDialog";
 import { EditProgramDialog } from "@/components/programs/EditProgramDialog";
-import { supabase } from "@/lib/supabase";
 import type { ProgramWithPromptCount } from "@/hooks/usePrograms";
 
 type ProgramTypeFilter = 'all' | 'chat' | 'form' | 'template';
 
 export default function Programs() {
   const navigate = useNavigate();
+  const { user } = useAuthContext();
   const [selectedType, setSelectedType] = useState<ProgramTypeFilter>("all");
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [searchQuery, setSearchQuery] = useState("");
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<ProgramWithPromptCount | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [showOnlyShared, setShowOnlyShared] = useState(false);
 
-  const { data: programs = [], isLoading } = usePrograms();
+  const { data: programs = [], isLoading } = useMyPrograms();
   const deleteProgram = useDeleteProgram();
-
-  // 현재 사용자 ID 가져오기
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
-    };
-    fetchUser();
-  }, []);
 
   const handleProgramStart = useCallback((programId: string) => {
     navigate(`/programs/${programId}/run`);
@@ -76,9 +76,10 @@ export default function Programs() {
       const matchesCategory = selectedCategory === "전체" || program.category === selectedCategory;
       const matchesSearch = program.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            program.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesType && matchesCategory && matchesSearch;
+      const matchesShared = !showOnlyShared || program.is_public;
+      return matchesType && matchesCategory && matchesSearch && matchesShared;
     });
-  }, [programs, selectedType, selectedCategory, searchQuery]);
+  }, [programs, selectedType, selectedCategory, searchQuery, showOnlyShared]);
 
   if (isLoading) {
     return (
@@ -96,14 +97,14 @@ export default function Programs() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in">
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">AI 도구 모음</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-1">AI도구 제작실</h1>
           <p className="text-muted-foreground">
             의료 업무에 바로 적용할 수 있는 AI 도구를 선택하거나 직접 만드세요
           </p>
         </div>
         <Button className="gap-2" onClick={() => setCreateDialogOpen(true)}>
           <Plus className="w-4 h-4" />
-          새 프로그램 만들기
+          AI도구 만들기
         </Button>
       </div>
 
@@ -193,46 +194,55 @@ export default function Programs() {
 
       {/* Search & Filter */}
       <div className="flex flex-col md:flex-row gap-4 animate-fade-in">
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="카테고리" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="프로그램 검색..." 
+          <Input
+            placeholder="프로그램 검색..."
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <Button variant="outline" size="icon">
-          <Filter className="w-4 h-4" />
+        <Button
+          variant={showOnlyShared ? "default" : "outline"}
+          className="gap-2 shrink-0"
+          onClick={() => setShowOnlyShared(!showOnlyShared)}
+        >
+          <Share2 className="w-4 h-4" />
+          <span className="hidden sm:inline">다른 사용자와 공유 (공개 프로그램)</span>
         </Button>
-      </div>
-
-      {/* Category Filter */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 animate-fade-in">
-        {categories.map((category) => (
-          <Button
-            key={category}
-            variant={selectedCategory === category ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedCategory(category)}
-            className="shrink-0"
-          >
-            {category}
-          </Button>
-        ))}
       </div>
 
       {/* Stats */}
       <div className="flex items-center gap-4 text-sm text-muted-foreground animate-fade-in">
         <span>
-          {selectedType === 'all' ? '총' :
+          {showOnlyShared ? '공유한 프로그램' :
+           selectedType === 'all' ? '총' :
            selectedType === 'chat' ? '💬 Chat' :
            selectedType === 'form' ? '📋 Form' : '📄 Template'} {filteredPrograms.length}개
         </span>
-        {filteredPrograms.filter(p => p.is_new).length > 0 && (
+        {!showOnlyShared && filteredPrograms.filter(p => p.is_new).length > 0 && (
           <>
             <span>•</span>
             <span>신규 {filteredPrograms.filter(p => p.is_new).length}개</span>
+          </>
+        )}
+        {showOnlyShared && (
+          <>
+            <span>•</span>
+            <span className="text-primary">공유 필터 활성화</span>
           </>
         )}
       </div>
@@ -255,8 +265,10 @@ export default function Programs() {
               usageCount={program.usage_count || 0}
               gradient={program.gradient}
               isNew={program.is_new || false}
+              isPublic={program.is_public || false}
               userId={program.user_id}
-              currentUserId={currentUserId || undefined}
+              currentUserId={user?.id}
+              author={(program as any).author}
               onStart={handleProgramStart}
               onEdit={handleEdit}
               onDelete={handleDelete}

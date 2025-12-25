@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Copy, Download, Printer, FileText } from "lucide-react";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface FormOutputRendererProps {
   output: string;
@@ -125,14 +127,45 @@ export function FormOutputRenderer({
             className="p-6 prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: output }}
           />
-        ) : format === "markdown" ? (
-          <div className="p-6 prose prose-sm max-w-none dark:prose-invert">
-            <pre className="whitespace-pre-wrap">{output}</pre>
-          </div>
         ) : (
-          <pre className="p-6 whitespace-pre-wrap font-sans text-sm leading-relaxed">
-            {output}
-          </pre>
+          <div className="p-6 prose prose-base max-w-none dark:prose-invert prose-slate prose-headings:font-bold prose-headings:text-foreground prose-p:text-card-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:not-italic prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-table:border-collapse prose-th:border prose-th:border-border prose-th:bg-muted prose-th:px-4 prose-th:py-2 prose-td:border prose-td:border-border prose-td:px-4 prose-td:py-2 prose-ul:list-disc prose-ol:list-decimal prose-li:text-card-foreground">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // 코드 블록 커스터마이징
+                code({className, children, ...props}: any) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  return match ? (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  ) : (
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+                // 표 커스터마이징
+                table({children}: any) {
+                  return (
+                    <div className="overflow-x-auto my-4">
+                      <table className="min-w-full">{children}</table>
+                    </div>
+                  );
+                },
+                // 인용구 커스터마이징
+                blockquote({children}: any) {
+                  return (
+                    <blockquote className="border-l-4 pl-4 py-2 my-4">
+                      {children}
+                    </blockquote>
+                  );
+                },
+              }}
+            >
+              {output}
+            </ReactMarkdown>
+          </div>
         )}
       </div>
     </div>

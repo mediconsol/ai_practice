@@ -134,9 +134,10 @@ mediconsol_ai_practice/
 | 페이지 | 경로 | 설명 |
 |--------|------|------|
 | 대시보드 | `/` | 빠른 실행, 통계, 최근 프롬프트 |
-| AI 프로그램 | `/programs` | 8개 AI 프로그램 카테고리 |
+| AI 도구 모음 | `/programs` | 8개 AI 프로그램 카테고리 |
 | 프롬프트 자산 | `/prompts` | 프롬프트 라이브러리 관리 |
-| AI 실행 | `/ai-execute` | 프롬프트 실행 및 결과 확인 |
+| 프롬프트 작업실 | `/ai-execute` | 프롬프트 실행 및 결과 확인 |
+| 프로그램 수집함 | `/program-collections` | AI 생성 HTML/React/Python 실행 및 저장 |
 | 내 프로젝트 | `/projects` | 프로젝트 단위 관리 |
 | 실행 히스토리 | `/history` | AI 실행 기록 조회 |
 

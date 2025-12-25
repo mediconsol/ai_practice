@@ -18,6 +18,8 @@ import History from "./pages/History";
 import MyPage from "./pages/MyPage";
 import UserGuide from "./pages/UserGuide";
 import ProgramCollections from "./pages/ProgramCollections";
+import Community from "./pages/Community";
+import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -143,6 +145,26 @@ const App = () => (
               <ProtectedRoute>
                 <DashboardLayout>
                   <ProgramCollections />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/community"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Community />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Settings />
                 </DashboardLayout>
               </ProtectedRoute>
             }

@@ -6,6 +6,7 @@ import {
   Share2,
   Trash2,
   Pencil,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +39,7 @@ interface ResultCardProps {
   onToggleShare?: (id: string, currentShared: boolean) => void;
   onEdit?: (id: string) => void;
   onDelete?: (id: string, title: string) => void;
+  onViewDetail?: (id: string) => void;
 }
 
 export function ResultCard({
@@ -57,6 +59,7 @@ export function ResultCard({
   onToggleShare,
   onEdit,
   onDelete,
+  onViewDetail,
 }: ResultCardProps) {
   const navigate = useNavigate();
 
@@ -239,15 +242,17 @@ export function ResultCard({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleCopyResult}
-          >
-            <Copy className="w-3 h-3 mr-1" />
-            복사
-          </Button>
+          {onViewDetail && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => onViewDetail(id)}
+            >
+              <Eye className="w-3 h-3 mr-1" />
+              상세보기
+            </Button>
+          )}
           <Button size="sm" className="h-7 text-xs" onClick={handleReExecute}>
             <Play className="w-3 h-3 mr-1" />
             다시 실행

@@ -9,6 +9,7 @@ import { ResultCard } from "@/components/results/ResultCard";
 import { PromptCard } from "@/components/dashboard/PromptCard";
 import { ShareConfirmDialog } from "@/components/results/ShareConfirmDialog";
 import { EditResultDialog } from "@/components/results/EditResultDialog";
+import { ResultDetailDialog } from "@/components/results/ResultDetailDialog";
 import { PROMPT_CATEGORIES_WITH_ALL } from "@/constants/categories";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
@@ -30,6 +31,8 @@ export default function MyPage() {
     category: string;
     memo?: string | null;
   } | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedResultForDetail, setSelectedResultForDetail] = useState<string | null>(null);
 
   // 데이터 조회
   const { data: results = [], isLoading: isLoadingResults } = useMyResults();
@@ -137,6 +140,11 @@ export default function MyPage() {
     }
   };
 
+  const handleViewDetail = (id: string) => {
+    setSelectedResultForDetail(id);
+    setDetailDialogOpen(true);
+  };
+
   const favoriteResultsCount = results.filter((r) => r.is_favorite).length;
   const favoritePromptsCount = prompts.filter((p) => p.is_favorite).length;
 
@@ -199,11 +207,11 @@ export default function MyPage() {
       <Tabs defaultValue="results" className="animate-fade-in">
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="results" className="gap-2">
-            <Sparkles className="w-4 h-4" />
+            <Sparkles className="w-4 h-4 text-warning" />
             실행 결과
           </TabsTrigger>
           <TabsTrigger value="prompts" className="gap-2">
-            <FileText className="w-4 h-4" />
+            <FileText className="w-4 h-4 text-primary" />
             내 프롬프트
           </TabsTrigger>
         </TabsList>
@@ -305,6 +313,7 @@ export default function MyPage() {
                     onToggleShare={handleToggleShare}
                     onEdit={handleEditResult}
                     onDelete={handleDeleteResult}
+                    onViewDetail={handleViewDetail}
                   />
                 </div>
               ))}
@@ -423,6 +432,41 @@ export default function MyPage() {
           open={editResultDialogOpen}
           onOpenChange={setEditResultDialogOpen}
           result={selectedResultForEdit}
+        />
+      )}
+
+      {/* Result Detail Dialog */}
+      {selectedResultForDetail && (
+        <ResultDetailDialog
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+          id={selectedResultForDetail}
+          title={
+            results.find((r) => r.id === selectedResultForDetail)?.title || ""
+          }
+          category={
+            results.find((r) => r.id === selectedResultForDetail)?.category || ""
+          }
+          prompt={
+            results.find((r) => r.id === selectedResultForDetail)?.prompt || ""
+          }
+          result={
+            results.find((r) => r.id === selectedResultForDetail)?.result || ""
+          }
+          memo={results.find((r) => r.id === selectedResultForDetail)?.memo}
+          aiProvider={
+            results.find((r) => r.id === selectedResultForDetail)?.ai_provider
+          }
+          aiModel={
+            results.find((r) => r.id === selectedResultForDetail)?.ai_model
+          }
+          executionTimeMs={
+            results.find((r) => r.id === selectedResultForDetail)
+              ?.execution_time_ms
+          }
+          createdAt={
+            results.find((r) => r.id === selectedResultForDetail)?.created_at || ""
+          }
         />
       )}
     </div>

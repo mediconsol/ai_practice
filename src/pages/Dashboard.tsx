@@ -1,23 +1,49 @@
 import {
   TrendingUp,
-  Sparkles,
   MessageSquareText,
-  Boxes
+  Archive,
+  Wrench
 } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
-import { ProgramCard } from "@/components/dashboard/ProgramCard";
-import { PromptCard } from "@/components/dashboard/PromptCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
-import { programs } from "@/data/programs";
-import { prompts } from "@/data/prompts";
-
-// Dashboard에는 상위 6개 프로그램만 표시
-const aiPrograms = programs.slice(0, 6);
-
-// Dashboard에는 최근 3개 프롬프트만 표시
-const recentPrompts = prompts.slice(0, 3);
+import { TokenUsageWidget } from "@/components/dashboard/TokenUsageWidget";
+import { RecentPromptWidget } from "@/components/dashboard/RecentPromptWidget";
+import { SharedPromptCardSimple } from "@/components/dashboard/SharedPromptCardSimple";
+import { SharedCollectionCardSimple } from "@/components/dashboard/SharedCollectionCardSimple";
+import { SharedProgramCardSimple } from "@/components/dashboard/SharedProgramCardSimple";
+import { Button } from "@/components/ui/button";
+import { useSharedResults } from "@/hooks/useExecutionResults";
+import { useSharedCollections } from "@/hooks/useCollections";
+import { usePublicPrograms } from "@/hooks/usePrograms";
+import { getIcon } from "@/lib/iconMap";
+import { useNavigate } from "react-router-dom";
+import {
+  useSavedPromptsCount,
+  useMyCollectionsCount,
+  useMyProgramsCount,
+  useTimeSaved,
+  useWeeklyCollectionChange,
+} from "@/hooks/useDashboardStats";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
+  // 통계 데이터 조회
+  const { data: savedPromptsCount = 0 } = useSavedPromptsCount();
+  const { data: myProgramsCount = 0 } = useMyProgramsCount();
+  const { data: myCollectionsCount = 0 } = useMyCollectionsCount();
+  const { data: timeSaved = 0 } = useTimeSaved();
+  const { data: weeklyChange = 0 } = useWeeklyCollectionChange();
+
+  // 공유 콘텐츠 조회
+  const { data: sharedResults = [] } = useSharedResults();
+  const { data: sharedCollections = [] } = useSharedCollections();
+  const { data: publicPrograms = [] } = usePublicPrograms();
+
+  // 최신 6개만 표시
+  const recentSharedResults = sharedResults.slice(0, 6);
+  const recentSharedCollections = sharedCollections.slice(0, 6);
+  const recentPublicPrograms = publicPrograms.slice(0, 6);
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Welcome Section */}
@@ -38,76 +64,172 @@ export default function Dashboard() {
       {/* Stats Overview */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatsCard
-          title="내 AI 도구"
-          value={6}
-          change="+2개 이번 주"
-          changeType="positive"
-          icon={Boxes}
-        />
-        <StatsCard
           title="저장된 프롬프트"
-          value={42}
+          value={savedPromptsCount}
           change="내 자산"
           changeType="neutral"
           icon={MessageSquareText}
         />
         <StatsCard
-          title="프롬프트 실행 횟수"
-          value={128}
-          change="오늘 12회"
-          changeType="positive"
-          icon={Sparkles}
+          title="생성한 AI도구"
+          value={myProgramsCount}
+          change="직접 만든 프로그램"
+          changeType="neutral"
+          icon={Wrench}
+        />
+        <StatsCard
+          title="AI소스 수집함"
+          value={myCollectionsCount}
+          change={weeklyChange > 0 ? `+${weeklyChange}개 이번 주` : "이번 주 추가 없음"}
+          changeType={weeklyChange > 0 ? "positive" : "neutral"}
+          icon={Archive}
         />
         <StatsCard
           title="시간 절약"
-          value="8.5h"
+          value={timeSaved > 0 ? `${timeSaved.toFixed(1)}h` : "0h"}
           change="이번 달 누적"
-          changeType="positive"
+          changeType={timeSaved > 0 ? "positive" : "neutral"}
           icon={TrendingUp}
         />
       </section>
 
-      {/* AI Programs Section */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">AI 도구 모음</h2>
-            <p className="text-sm text-muted-foreground">
-              의료 업무에 바로 적용할 수 있는 AI 도구
-            </p>
-          </div>
-          <button className="text-sm font-medium text-primary hover:underline">
-            전체 보기 →
-          </button>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {aiPrograms.map((program, index) => (
-            <div 
-              key={program.title}
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <ProgramCard {...program} />
-            </div>
-          ))}
-        </div>
+      {/* Token Usage & Recent Prompt */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <TokenUsageWidget />
+        <RecentPromptWidget />
       </section>
 
-      {/* Recent Prompts Section */}
+      {/* Shared Prompts Section */}
       <section>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">최근 사용 프롬프트</h2>
-            <p className="text-sm text-muted-foreground">내 프롬프트에서 빠르게 실행</p>
+            <h2 className="text-lg font-semibold text-foreground">공유 프롬프트</h2>
+            <p className="text-sm text-muted-foreground">
+              다른 의료진이 공유한 우수 사례를 확인하세요
+            </p>
           </div>
-          <button className="text-sm font-medium text-primary hover:underline">
-            라이브러리 →
-          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/prompts?tab=shared")}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            전체 보기 →
+          </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {recentPrompts.map((prompt) => (
-            <PromptCard key={prompt.title} {...prompt} />
-          ))}
+        {recentSharedResults.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentSharedResults.map((result, index) => (
+              <div
+                key={result.id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <SharedPromptCardSimple
+                  result={result}
+                  onViewMore={() => navigate("/prompts?tab=shared")}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <p className="text-muted-foreground">
+              아직 공유된 프롬프트가 없습니다
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Shared Programs Section */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">공유 AI 도구</h2>
+            <p className="text-sm text-muted-foreground">
+              다른 의료진이 공유한 AI 도구를 사용해보세요
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/programs")}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            전체 보기 →
+          </Button>
         </div>
+        {recentPublicPrograms.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentPublicPrograms.map((program, index) => (
+              <div
+                key={program.id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <SharedProgramCardSimple
+                  id={program.id}
+                  title={program.title}
+                  description={program.description || ""}
+                  icon={getIcon(program.icon || "Sparkles")}
+                  category={program.category}
+                  promptCount={program.prompt_count}
+                  usageCount={program.usage_count || 0}
+                  gradient={program.gradient}
+                  onViewMore={() => navigate("/programs")}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <p className="text-muted-foreground">
+              아직 공유된 AI 도구가 없습니다
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Shared Collections Section */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">공유 AI소스 수집함</h2>
+            <p className="text-sm text-muted-foreground">
+              커뮤니티에서 공유한 AI소스 수집함을 사용해보세요
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/program-collections?tab=shared")}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            전체 보기 →
+          </Button>
+        </div>
+        {recentSharedCollections.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentSharedCollections.map((collection, index) => (
+              <div
+                key={collection.id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <SharedCollectionCardSimple
+                  collection={collection}
+                  onViewMore={() => navigate("/program-collections?tab=shared")}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <p className="text-muted-foreground">
+              아직 공유된 AI소스 수집함이 없습니다
+            </p>
+          </div>
+        )}
       </section>
     </div>
   );

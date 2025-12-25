@@ -1,28 +1,64 @@
 import { useState, useEffect } from "react";
-import { Sparkles, ChevronDown } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { Sparkles, ChevronDown, Share2, Search, Grid, List, Code } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CodeEditor } from "@/components/collections/CodeEditor";
 import { PreviewPane } from "@/components/collections/PreviewPane";
 import { SaveCollectionDialog } from "@/components/collections/SaveCollectionDialog";
+import { ShareCollectionDialog } from "@/components/collections/ShareCollectionDialog";
 import { CollectionList } from "@/components/collections/CollectionList";
+import { SharedCollectionCard } from "@/components/collections/SharedCollectionCard";
 import { CollectionViewDialog } from "@/components/collections/CollectionViewDialog";
 import { isClaudeArtifactUrl, extractArtifactUrl, isHtmlCode, isPythonCode, isReactCode } from "@/lib/urlDetector";
-import { useCollections } from "@/hooks/useCollections";
+import {
+  useCollections,
+  useSharedCollections,
+  useToggleCollectionShare,
+  useSaveSharedCollectionToMy,
+} from "@/hooks/useCollections";
 import type { CreateCollectionInput, Collection } from "@/types/collection";
+import { COLLECTION_CATEGORIES } from "@/types/collection";
 import { toast } from "sonner";
 
+type SortOption = "latest" | "popular" | "likes" | "views";
+
 export default function ProgramCollections() {
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+
   const [sourceCode, setSourceCode] = useState("");
   const [previewMode, setPreviewMode] = useState<'html' | 'artifact' | 'python' | 'react' | 'none'>('none');
   const [artifactUrl, setArtifactUrl] = useState("");
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState<'editor' | 'list'>('editor');
+  const [currentTab, setCurrentTab] = useState<'editor' | 'my-collections' | 'shared-collections'>(
+    tabParam === "shared" ? "shared-collections" : "editor"
+  );
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedViewCollection, setSelectedViewCollection] = useState<Collection | null>(null);
 
+  // Phase 2: 공유 관련 state
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [collectionToShare, setCollectionToShare] = useState<{ id: string; title: string; isShared: boolean } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("전체");
+  const [sortBy, setSortBy] = useState<SortOption>("latest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
   const { collections, saveCollection, deleteCollection, getCollectionById } = useCollections();
+  const { data: sharedCollections = [], isLoading: isLoadingShared } = useSharedCollections();
+  const toggleShare = useToggleCollectionShare();
+  const saveSharedToMy = useSaveSharedCollectionToMy();
 
   // 자동 감지 로직
   useEffect(() => {
@@ -84,13 +120,72 @@ export default function ProgramCollections() {
     setViewDialogOpen(true);
   };
 
+  // Phase 2: 공유 관련 핸들러
+  const handleToggleShare = (id: string, currentShared: boolean) => {
+    const collection = collections.find((c) => c.id === id);
+    if (!collection) return;
+
+    if (currentShared) {
+      // 공유 취소
+      if (window.confirm("공유를 취소하시겠습니까?")) {
+        toggleShare.mutate({ id, isShared: currentShared });
+      }
+    } else {
+      // 공유하기 - 다이얼로그 표시
+      setCollectionToShare({
+        id,
+        title: collection.title,
+        isShared: currentShared,
+      });
+      setShareDialogOpen(true);
+    }
+  };
+
+  const handleConfirmShare = () => {
+    if (collectionToShare) {
+      toggleShare.mutate({ id: collectionToShare.id, isShared: collectionToShare.isShared });
+    }
+  };
+
+  const handleSaveSharedToMy = (id: string) => {
+    saveSharedToMy.mutate(id);
+  };
+
+  // 공유 컬렉션 필터링 및 정렬
+  const filteredSharedCollections = sharedCollections
+    .filter((collection) => {
+      const matchesCategory =
+        selectedCategory === "전체" || collection.category === selectedCategory;
+      const matchesSearch =
+        collection.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (collection.memo && collection.memo.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "latest":
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case "popular":
+          // 인기도 = 좋아요 * 2 + 조회수
+          const popularityA = a.like_count * 2 + a.view_count;
+          const popularityB = b.like_count * 2 + b.view_count;
+          return popularityB - popularityA;
+        case "likes":
+          return b.like_count - a.like_count;
+        case "views":
+          return b.view_count - a.view_count;
+        default:
+          return 0;
+      }
+    });
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="animate-fade-in">
-        <h1 className="text-2xl font-bold text-foreground mb-1">프로그램 수집함</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-1">AI소스 수집함</h1>
         <p className="text-muted-foreground">
-          AI 도구에서 생성한 프로그램을 실행하고 보관하세요 (HTML 권장, React/Python 제한적)
+          AI 도구에서 생성한 소스코드를 실행하고 보관하세요 (HTML 권장, React/Python 제한적)
         </p>
       </div>
 
@@ -170,11 +265,19 @@ export default function ProgramCollections() {
       </Collapsible>
 
       {/* Tabs */}
-      <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as 'editor' | 'list')} className="animate-fade-in" style={{ animationDelay: "100ms" }}>
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="editor">에디터</TabsTrigger>
-          <TabsTrigger value="list">
-            저장된 목록 ({collections.length})
+      <Tabs value={currentTab} onValueChange={(value) => setCurrentTab(value as 'editor' | 'my-collections' | 'shared-collections')} className="animate-fade-in" style={{ animationDelay: "100ms" }}>
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsTrigger value="editor" className="gap-2">
+            <Code className="w-4 h-4 text-info" />
+            에디터
+          </TabsTrigger>
+          <TabsTrigger value="my-collections" className="gap-2">
+            <Sparkles className="w-4 h-4 text-warning" />
+            저장목록 ({collections.length})
+          </TabsTrigger>
+          <TabsTrigger value="shared-collections" className="gap-2">
+            <Share2 className="w-4 h-4 text-success" />
+            공유목록
           </TabsTrigger>
         </TabsList>
 
@@ -209,12 +312,151 @@ export default function ProgramCollections() {
           </div>
         </TabsContent>
 
-        <TabsContent value="list" className="mt-6">
+        <TabsContent value="my-collections" className="mt-6">
           <CollectionList
             collections={collections}
             onOpen={handleOpenCollection}
             onDelete={deleteCollection}
+            onToggleShare={handleToggleShare}
           />
+        </TabsContent>
+
+        {/* 공유 컬렉션 탭 */}
+        <TabsContent value="shared-collections" className="space-y-4 mt-6">
+          {/* Search & Filter */}
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Category Select */}
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="카테고리" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="전체">전체</SelectItem>
+                {COLLECTION_CATEGORIES.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="공유 컬렉션 검색..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* View Mode */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === "grid" ? "default" : "outline"}
+                size="icon"
+                onClick={() => setViewMode("grid")}
+              >
+                <Grid className="w-4 h-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="icon"
+                onClick={() => setViewMode("list")}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Sort Options */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            <span className="text-sm font-medium text-muted-foreground shrink-0">
+              정렬:
+            </span>
+            <Button
+              variant={sortBy === "latest" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortBy("latest")}
+              className="shrink-0"
+            >
+              최신순
+            </Button>
+            <Button
+              variant={sortBy === "popular" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortBy("popular")}
+              className="shrink-0"
+            >
+              인기순
+            </Button>
+            <Button
+              variant={sortBy === "likes" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortBy("likes")}
+              className="shrink-0"
+            >
+              좋아요순
+            </Button>
+            <Button
+              variant={sortBy === "views" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSortBy("views")}
+              className="shrink-0"
+            >
+              조회순
+            </Button>
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>{filteredSharedCollections.length}개 공유 컬렉션</span>
+            <span>•</span>
+            <span>
+              총 조회수{" "}
+              {filteredSharedCollections.reduce((acc, c) => acc + c.view_count, 0)}
+            </span>
+          </div>
+
+          {/* Shared Collections Grid */}
+          {isLoadingShared ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                공유 컬렉션을 불러오는 중...
+              </p>
+            </div>
+          ) : filteredSharedCollections.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                {searchQuery || selectedCategory !== "전체"
+                  ? "검색 결과가 없습니다."
+                  : "공유된 컬렉션이 없습니다."}
+              </p>
+            </div>
+          ) : (
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                  : "space-y-3"
+              }
+            >
+              {filteredSharedCollections.map((collection, index) => (
+                <div
+                  key={collection.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <SharedCollectionCard
+                    collection={collection}
+                    onOpen={handleOpenCollection}
+                    onSaveToMyCollections={handleSaveSharedToMy}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -234,6 +476,14 @@ export default function ProgramCollections() {
         onOpenChange={setViewDialogOpen}
         collection={selectedViewCollection}
         onLoadCollection={getCollectionById}
+      />
+
+      {/* Share Collection Dialog */}
+      <ShareCollectionDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        title={collectionToShare?.title || ""}
+        onConfirm={handleConfirmShare}
       />
     </div>
   );

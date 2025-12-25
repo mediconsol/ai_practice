@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase, uploadCollectionFile, downloadCollectionFile, deleteCollectionFile } from '@/lib/supabase';
@@ -244,4 +245,250 @@ export function useCollections() {
     getCollectionById,
     refetch: fetchCollections,
   };
+}
+
+// ================================================
+// Phase 2: 공유 기능 Hooks
+// ================================================
+
+/**
+ * 공유된 컬렉션 조회
+ */
+export function useSharedCollections() {
+  return useQuery({
+    queryKey: ['shared-collections'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('collections')
+        .select('*')
+        .eq('is_shared', true)
+        .order('created_at', { ascending: false});
+
+      if (error) throw error;
+
+      // Manually fetch author information for each collection
+      const collectionsWithAuthors = await Promise.all(
+        (data || []).map(async (collection) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, email, full_name, hospital, department')
+            .eq('id', collection.user_id)
+            .maybeSingle();
+
+          return {
+            ...collection,
+            author: profile || null,
+          };
+        })
+      );
+
+      return collectionsWithAuthors as any[];
+    },
+  });
+}
+
+/**
+ * 공유 토글
+ */
+export function useToggleCollectionShare() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, isShared }: { id: string; isShared: boolean }) => {
+      const updates: Record<string, any> = {
+        is_shared: !isShared,
+      };
+
+      if (!isShared) {
+        updates.shared_at = new Date().toISOString();
+      } else {
+        updates.shared_at = null;
+      }
+
+      const { error } = await supabase
+        .from('collections')
+        .update(updates)
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      queryClient.invalidateQueries({ queryKey: ['shared-collections'] });
+      toast.success('공유 설정이 변경되었습니다');
+    },
+    onError: (error) => {
+      console.error('Failed to toggle share:', error);
+      toast.error('공유 설정 변경 실패');
+    },
+  });
+}
+
+/**
+ * 좋아요 토글
+ */
+export function useToggleCollectionLike() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (collectionId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('로그인이 필요합니다');
+
+      // 기존 좋아요 확인
+      const { data: existingLike } = await supabase
+        .from('collection_likes')
+        .select('id')
+        .eq('collection_id', collectionId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingLike) {
+        // 좋아요 취소
+        const { error } = await supabase
+          .from('collection_likes')
+          .delete()
+          .eq('id', existingLike.id);
+
+        if (error) throw error;
+      } else {
+        // 좋아요 추가
+        const { error } = await supabase
+          .from('collection_likes')
+          .insert({
+            collection_id: collectionId,
+            user_id: user.id,
+          });
+
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shared-collections'] });
+      queryClient.invalidateQueries({ queryKey: ['collection-like'] });
+    },
+    onError: (error) => {
+      console.error('Failed to toggle like:', error);
+      toast.error('좋아요 처리 실패');
+    },
+  });
+}
+
+/**
+ * 조회수 증가
+ */
+export function useIncrementCollectionViewCount() {
+  return useMutation({
+    mutationFn: async (collectionId: string) => {
+      const { error } = await supabase.rpc('increment_collection_view_count', {
+        collection_id: collectionId,
+      });
+
+      if (error) throw error;
+    },
+  });
+}
+
+/**
+ * 공유 컬렉션을 내 수집함에 저장
+ */
+export function useSaveSharedCollectionToMy() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (collectionId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('로그인이 필요합니다');
+
+      // 원본 컬렉션 조회
+      const { data: original, error: fetchError } = await supabase
+        .from('collections')
+        .select('*')
+        .eq('id', collectionId)
+        .single();
+
+      if (fetchError || !original) throw fetchError;
+
+      // Storage에서 소스 코드 다운로드 (있는 경우)
+      let sourceCode: string | null = null;
+      if (original.storage_path) {
+        const { content } = await downloadCollectionFile(original.storage_path);
+        sourceCode = content;
+      }
+
+      // 새 컬렉션 ID 생성
+      const newId = crypto.randomUUID();
+
+      // Storage 파일 업로드 (있는 경우)
+      let newStoragePath: string | null = null;
+      if (sourceCode && original.preview_mode !== 'artifact') {
+        const extension = original.preview_mode === 'python' ? 'py'
+          : original.preview_mode === 'react' ? 'jsx'
+          : 'html';
+
+        const { path } = await uploadCollectionFile(
+          user.id,
+          newId,
+          sourceCode,
+          extension
+        );
+        newStoragePath = path;
+      }
+
+      // DB에 새 컬렉션 저장
+      const { error: insertError } = await supabase
+        .from('collections')
+        .insert({
+          id: newId,
+          user_id: user.id,
+          title: `${original.title} (공유)`,
+          category: original.category,
+          preview_mode: original.preview_mode,
+          artifact_url: original.artifact_url,
+          storage_path: newStoragePath,
+          memo: original.memo
+            ? `${original.memo}\n\n[출처: 공유 컬렉션]`
+            : '[출처: 공유 컬렉션]',
+          is_favorite: false,
+          is_shared: false,
+        });
+
+      if (insertError) throw insertError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['collections'] });
+      toast.success('내 수집함에 저장되었습니다');
+    },
+    onError: (error) => {
+      console.error('Failed to save shared collection:', error);
+      toast.error('저장 실패');
+    },
+  });
+}
+
+/**
+ * 사용자가 좋아요 했는지 확인
+ */
+export function useCheckCollectionLike(collectionId: string) {
+  return useQuery({
+    queryKey: ['collection-like', collectionId],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+
+      const { data, error } = await supabase
+        .from('collection_likes')
+        .select('id')
+        .eq('collection_id', collectionId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error checking collection like:", error);
+        return false;
+      }
+
+      return !!data;
+    },
+  });
 }

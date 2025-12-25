@@ -1,4 +1,4 @@
-import { Copy, Play, Eye, Download, Heart, Maximize2 } from "lucide-react";
+import { Copy, Play, Eye, Download, Heart, Maximize2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -6,6 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -30,6 +31,13 @@ interface SharedResultCardProps {
   createdAt: string;
   viewCount: number;
   likeCount: number;
+  author?: {
+    id: string;
+    email?: string;
+    full_name?: string;
+    hospital?: string;
+    department?: string;
+  } | null;
   onSaveToMyAssets?: (id: string) => void;
   onViewDetail?: (id: string) => void;
 }
@@ -47,6 +55,7 @@ export function SharedResultCard({
   createdAt,
   viewCount,
   likeCount,
+  author,
   onSaveToMyAssets,
   onViewDetail,
 }: SharedResultCardProps) {
@@ -154,19 +163,44 @@ export function SharedResultCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs text-muted-foreground">
-            {formatDistanceToNow(new Date(createdAt), {
-              addSuffix: true,
-              locale: ko,
-            })}
-          </span>
-          {aiProvider && (
-            <span className="text-xs text-muted-foreground/60">
-              {getProviderName(aiProvider)}
-              {executionTimeMs && ` • ${(executionTimeMs / 1000).toFixed(2)}초`}
-            </span>
+        <div className="flex flex-col gap-1.5">
+          {/* Author Info */}
+          {author && (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-5 w-5 border">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-info text-white text-[10px] font-semibold">
+                  {author.full_name?.substring(0, 2).toUpperCase() || <User className="w-3 h-3" />}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-xs font-medium text-foreground">
+                  {author.full_name || '익명'}
+                </span>
+                {author.hospital && (
+                  <span className="text-[10px] text-muted-foreground">
+                    {author.hospital}{author.department && ` · ${author.department}`}
+                  </span>
+                )}
+              </div>
+            </div>
           )}
+          {/* Time & Provider Info */}
+          <div className="flex flex-col gap-0.5">
+            <span className="text-xs text-muted-foreground">
+              {createdAt && new Date(createdAt).toString() !== 'Invalid Date'
+                ? formatDistanceToNow(new Date(createdAt), {
+                    addSuffix: true,
+                    locale: ko,
+                  })
+                : '날짜 정보 없음'}
+            </span>
+            {aiProvider && (
+              <span className="text-xs text-muted-foreground/60">
+                {getProviderName(aiProvider)}
+                {executionTimeMs && ` • ${(executionTimeMs / 1000).toFixed(2)}초`}
+              </span>
+            )}
+          </div>
         </div>
         <TooltipProvider>
           <div className="flex items-center gap-0.5">

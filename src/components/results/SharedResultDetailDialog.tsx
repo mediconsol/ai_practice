@@ -112,10 +112,12 @@ export function SharedResultDetailDialog({
                   공유됨
                 </Badge>
                 <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(createdAt), {
-                    addSuffix: true,
-                    locale: ko,
-                  })}
+                  {createdAt && new Date(createdAt).toString() !== 'Invalid Date'
+                    ? formatDistanceToNow(new Date(createdAt), {
+                        addSuffix: true,
+                        locale: ko,
+                      })
+                    : '날짜 정보 없음'}
                 </span>
               </DialogDescription>
             </div>

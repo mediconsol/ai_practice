@@ -1,20 +1,34 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Trash2, ExternalLink, Code, Play } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Star, Trash2, ExternalLink, Code, Play, MoreVertical, Share2 } from "lucide-react";
 import type { Collection } from "@/types/collection";
 
 interface CollectionCardProps {
   collection: Collection;
   onOpen: (collection: Collection) => void;
   onDelete: (id: string) => void;
+  onToggleShare?: (id: string, currentShared: boolean) => void;
 }
 
-export function CollectionCard({ collection, onOpen, onDelete }: CollectionCardProps) {
+export function CollectionCard({ collection, onOpen, onDelete, onToggleShare }: CollectionCardProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm(`"${collection.title}"을(를) 삭제하시겠습니까?`)) {
       onDelete(collection.id);
+    }
+  };
+
+  const handleToggleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleShare) {
+      onToggleShare(collection.id, collection.is_shared);
     }
   };
 
@@ -50,9 +64,16 @@ export function CollectionCard({ collection, onOpen, onDelete }: CollectionCardP
     <Card className="hover:border-primary/50 transition-all duration-200 group">
       <CardHeader>
         <div className="flex justify-between items-start mb-2">
-          <Badge variant="secondary" className="text-xs">
-            {collection.category}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Badge variant="secondary" className="text-xs">
+              {collection.category}
+            </Badge>
+            {collection.is_shared && (
+              <Badge variant="default" className="text-xs bg-success text-success-foreground">
+                공유 중
+              </Badge>
+            )}
+          </div>
           {collection.is_favorite && (
             <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
           )}
@@ -91,14 +112,33 @@ export function CollectionCard({ collection, onOpen, onDelete }: CollectionCardP
             <Play className="w-3.5 h-3.5" />
             프로그램 열기
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={handleDelete}
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onToggleShare && (
+                <DropdownMenuItem onClick={handleToggleShare}>
+                  <Share2 className="w-4 h-4 mr-2" />
+                  {collection.is_shared ? "공유 취소" : "공유하기"}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={handleDelete}
+                className="text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                삭제
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardFooter>
     </Card>

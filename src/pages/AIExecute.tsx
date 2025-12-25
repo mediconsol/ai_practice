@@ -28,6 +28,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { SavePromptDialog } from "@/components/prompts/SavePromptDialog";
 import { SaveResultDialog } from "@/components/results/SaveResultDialog";
+import { UpgradeDialog } from "@/components/dialogs/UpgradeDialog";
 
 const quickPrompts = [
   {
@@ -87,6 +88,7 @@ export default function AIExecute() {
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isSaveResultDialogOpen, setIsSaveResultDialogOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
 
   const executeAI = useExecuteAI();
   const savePrompt = useSavePrompt();
@@ -128,6 +130,13 @@ export default function AIExecute() {
     } catch (error: any) {
       console.error('AI execution error:', error);
       setResult('');
+
+      // 토큰 제한 초과 시 업그레이드 다이얼로그 표시
+      if (error.message === 'TOKEN_LIMIT_EXCEEDED') {
+        setIsUpgradeDialogOpen(true);
+        return;
+      }
+
       toast.error('AI 실행 실패', {
         description: error.message || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.',
       });
@@ -523,6 +532,13 @@ ${prompt}`,
         executionTimeMs={executionTime || undefined}
         tokenUsage={tokenUsage}
         onSave={handleSaveResult}
+      />
+
+      {/* Upgrade Dialog */}
+      <UpgradeDialog
+        open={isUpgradeDialogOpen}
+        onOpenChange={setIsUpgradeDialogOpen}
+        reason="limit_exceeded"
       />
     </div>
   );
