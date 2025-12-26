@@ -42,7 +42,7 @@ export default function Login() {
             </div>
             <div>
               <CardTitle className="text-2xl">로그인</CardTitle>
-              <CardDescription className="text-xs text-slate-500">메디콘솔 AI 프랙티스</CardDescription>
+              <CardDescription className="text-xs text-slate-500">메디콘솔 AI Tool</CardDescription>
             </div>
           </div>
           <CardDescription>

@@ -110,11 +110,11 @@ export default function Signup() {
             </div>
             <div>
               <CardTitle className="text-2xl">회원가입</CardTitle>
-              <CardDescription className="text-xs text-slate-500">메디콘솔 AI 프랙티스</CardDescription>
+              <CardDescription className="text-xs text-slate-500">메디콘솔 AI Tool</CardDescription>
             </div>
           </div>
           <CardDescription>
-            메디콘솔 AI 프랙티스에 오신 것을 환영합니다
+            메디콘솔 AI Tool에 오신 것을 환영합니다
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSignup}>
