@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { LogIn, Loader2 } from "lucide-react";
+import { LogIn, Loader2, Info } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -51,6 +52,31 @@ export default function Login() {
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
+            {/* 베타 테스트 안내 */}
+            <Alert className="bg-blue-50 border-blue-200">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-sm text-slate-700 ml-2">
+                <p className="font-semibold text-blue-900 mb-2">메디콘솔 AI Tool은 현재 베타 테스트 중입니다.</p>
+                <p className="mb-2">본 서비스는 사전 선정된 의료종사자에게만 아이디와 비밀번호가 발급되어 이용하실 수 있습니다.</p>
+                <p className="text-xs mt-2">
+                  <span className="font-medium">베타 테스트 참가 문의:</span>
+                  <br />
+                  <a href="mailto:admin@mediconsol.com" className="text-blue-600 hover:underline">
+                    admin@mediconsol.com
+                  </a>
+                  {" 또는 "}
+                  <a
+                    href="https://www.mediconsol.com/consulting"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    문의신청 페이지
+                  </a>
+                </p>
+              </AlertDescription>
+            </Alert>
+
             <div className="space-y-2">
               <Label htmlFor="email">이메일</Label>
               <Input
@@ -102,15 +128,6 @@ export default function Login() {
                 </>
               )}
             </Button>
-            <div className="text-center text-sm text-slate-600">
-              계정이 없으신가요?{" "}
-              <Link
-                to="/signup"
-                className="font-medium text-teal-600 hover:text-teal-700 hover:underline"
-              >
-                회원가입
-              </Link>
-            </div>
           </CardFooter>
         </form>
       </Card>
